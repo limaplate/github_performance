@@ -1,0 +1,307 @@
+count_signals_v2.py — Start: 2026-07-11T09:04:24
+DB: upstreamPackagesV2
+Tier-1 (15 Libs): ['tensorflow', 'tensorflow-gpu', 'tensorflow-cpu', 'torch', 'torchvision', 'torchaudio', 'keras', 'mxnet', 'paddlepaddle', 'tflearn', 'dm-sonnet', 'theano', 'scikit-learn', 'spacy', 'nltk']
+Tier-2 (31 Libs): ['transformers', 'sentence-transformers', 'datasets', 'tokenizers', 'accelerate', 'peft', 'diffusers', 'trl', 'huggingface-hub', 'openai', 'anthropic', 'google-generativeai', 'mistralai', 'cohere', 'langchain', 'langchain-core', 'langchain-community', 'llama-index', 'llama-index-core', 'llama-cpp-python', 'haystack-ai', 'litellm', 'guidance', 'dspy', 'crewai', 'pyautogen', 'autogen', 'autogen-agentchat', 'smolagents', 'pydantic-ai', 'instructor']
+Tier-3 (26 Libs): ['jax', 'flax', 'pytorch-lightning', 'fastai', 'timm', 'torch-geometric', 'deepspeed', 'bitsandbytes', 'unsloth', 'xgboost', 'lightgbm', 'catboost', 'imbalanced-learn', 'gensim', 'chromadb', 'qdrant-client', 'faiss-cpu', 'pymilvus', 'weaviate-client', 'pinecone', 'mlflow', 'wandb', 'optuna', 'evidently', 'bentoml', 'stable-baselines3']
+High-Conf-Keywords: 59
+Medium-Conf-Keywords: 13
+Verbunden.
+
+  Link-Join: 505,974 PyPI-Pakete haben links.repo
+  Link-Join: 416,529 davon matchen ein depsProjects-Dokument (type=GITHUB)
+
+========================================================================
+BLOCK 1 — Grundgroessen (rohe Collection-Zahlen)
+========================================================================
+
+  depsPackages: Jedes Dokument = ein unique PyPI-Paket.
+  _id = {name, system} — kein Dedup noetig.
+  [09:05:18] PyPI-Pakete gesamt (depsPackages) ...
+    => 772,267  (1.2s)
+
+  depsProjects: Jedes Dokument = ein unique GitHub/GitLab/Bitbucket-Projekt.
+  _id = {name: 'owner/repo', type: 'GITHUB'} — kein Dedup noetig.
+  Mehrfach-Zeitpunkte sind in depsProjectsPanel, NICHT hier.
+  [09:05:20] GitHub-Projekte gesamt (depsProjects) ...
+    => 396,020  (0.8s)
+
+  depsPackagesDependencies: MEHRERE Eintraege pro Paket (je Version).
+  5.9M Eintraege != 5.9M unique Pakete!
+  Dedup via $group auf _id.name liefert unique Pakete (Block 2).
+  [09:05:20] Versionseintraege gesamt (depsPackagesDependencies, raw) ...
+    => 8,384,211  (1730.4s)
+
+========================================================================
+BLOCK 2 — Deduplizierte Grundgroessen
+========================================================================
+
+  depsPackages: bereits unique (kein Dedup).
+
+  depsPackagesDependencies: $group auf _id.name
+  -> Wie viele unique Paket-NAMEN sind im Dependency-Graph?
+  (Unterschied zu Block 1: 5.9M Eintraege vs. X unique Pakete)
+  [09:34:11] unique Paketnamen in depsPackagesDependencies ...
+    => 748,413  (1791.1s)
+    => 96.9% der PyPI-Pakete sind im Dependency-Graph enthalten
+    (Rest: Pakete ohne requirements.txt oder nie als Dep genutzt)
+
+  depsProjects: bereits unique (_id = Compound-Key). Gleich wie Block 1.
+
+========================================================================
+BLOCK 3b — Signal A2: KI-Keywords in GitHub-Repo-Description
+========================================================================
+  SIGNAL A2: Semantisches Signal auf Projekt-Ebene
+  Wo: depsProjects.description
+  Das ist: Einzeiliger Beschreibungstext unter dem GitHub-Repo-Titel
+  Beispiel: 'A PyTorch implementation of BERT for NLP classification'
+  Nicht: README (separates Dokument), Commit-Messages, Topics
+  Dieselben High-Conf-Keywords wie Signal A (packageInformation.description)
+  -> Direkt vergleichbar: Wo beschreiben Entwickler ihr Paket expliziter?
+    => 83.8% der PyPI-verknuepften GitHub-Projekte haben Beschreibung
+
+  A2a: High-Conf-Keywords in GitHub-Description (Hauptmass)
+    => 8.06% der PyPI-verknuepften GitHub-Projekte
+
+  A2b: Per-Keyword in GitHub-Description (Vergleich zu PyPI-Description)
+  Frage: Welche Keywords kommen auf GitHub haeufiger vor als auf PyPI?
+    github keyword='ai_term' => 12,290
+    github keyword='ml_abbreviation' => 1,454
+    github keyword='machine_learning' => 2,743
+    github keyword='deep_learning' => 1,576
+    github keyword='neural_network' => 1,298
+    github keyword='artificial_intelligence' => 148
+    github keyword='reinforcement_learning' => 627
+    github keyword='transfer_learning' => 55
+    github keyword='llm' => 4,938
+    github keyword='large_language_model' => 469
+    github keyword='language_model' => 976
+    github keyword='foundation_model' => 132
+    github keyword='generative_ai' => 379
+    github keyword='generative_model' => 101
+    github keyword='transformer' => 439
+    github keyword='diffusion_model' => 89
+    github keyword='attention_mechanism' => 23
+    github keyword='gan' => 74
+    github keyword='vae' => 27
+    github keyword='nlp' => 657
+    github keyword='natural_language' => 736
+    github keyword='text_classification' => 91
+    github keyword='sentiment_analysis' => 117
+    github keyword='named_entity' => 84
+    github keyword='text_generation' => 104
+    github keyword='tokenization' => 272
+    github keyword='computer_vision' => 421
+    github keyword='object_detection' => 190
+    github keyword='image_classification' => 82
+    github keyword='image_segmentation' => 59
+    github keyword='image_generation' => 151
+    github keyword='speech_recognition' => 121
+    github keyword='text_to_speech' => 448
+    github keyword='retrieval_augmented' => 163
+    github keyword='rag' => 760
+    github keyword='prompt_engineering' => 34
+    github keyword='vector_store' => 347
+    github keyword='semantic_search' => 170
+    github keyword='fine_tuning' => 332
+    github keyword='pretrained' => 337
+    github keyword='chatbot' => 439
+    github keyword='word_embedding' => 110
+    github keyword='gradient_boosting' => 66
+    github keyword='automl' => 156
+    github keyword='mlops' => 84
+    github keyword='pytorch_ref' => 2,884
+    github keyword='tensorflow_ref' => 823
+    github keyword='openai_ref' => 1,240
+    github keyword='langchain_ref' => 672
+    github keyword='huggingface_ref' => 331
+    github keyword='gpt_versioned' => 177
+    github keyword='gpt_generic' => 404
+    github keyword='bert_ref' => 144
+    github keyword='chatgpt_ref' => 361
+    github keyword='gemini_ref' => 519
+    github keyword='llama_ref' => 186
+    github keyword='mistral_ref' => 85
+    github keyword='stable_diffusion' => 54
+    github keyword='claude_model_ref' => 34
+
+========================================================================
+BLOCK 4 — Signal B: KI-Library als direkte Abhaengigkeit (depth=1)
+========================================================================
+  Einmaliger Scan, danach lokale Aggregation
+    => 64,857 Pakete mit mind. 1 AI-Lib (1974.2s)
+
+========================================================================
+BLOCK 5 — Ueberschneidung Signal A und Signal B
+========================================================================
+  Ziel: Venn-Diagramm der beiden Signale
+  A UNION B = Hauptklassifikation fuer H7 (Treatment-Gruppe im DiD)
+  A INTERSECT B = konservativer Robustheitscheck
+
+  Methode:
+  1. Alle Paketnamen mit Signal B (AI-Dep) aus depsPackagesDependencies abrufen
+  2. In depsPackages pruefen: welche haben zusaetzlich Signal A (Keyword)?
+
+  Schritt 1: Paketnamen mit Signal B abrufen...
+  (Alle Paketnamen aus depsPackagesDependencies die mind. eine AI-Library
+   als depth=1-Dep haben — nach Dedup auf Paketnamen-Ebene)
+    => 64,857 Paketnamen mit Signal B  (0.0s)
+    (Diese Namen werden jetzt als Filter in depsPackages verwendet)
+
+  Schnittmenge A ∩ B:
+  Pakete die IN names_b sind (= haben AI-Lib-Dep)
+  UND deren PyPI-description ein High-Conf-Keyword enthaelt
+  = staerkstes Signal, beide Tests positiv
+  [10:37:57] A ∩ B: Signal A AND Signal B ...
+    => 26,908  (109.8s)
+
+  Nur A (nicht in B):
+  Pakete die NICHT IN names_b sind (kein AI-Lib-Dep bekannt)
+  aber deren description ein AI-Keyword enthaelt
+  Typische Faelle: LLM-API-Wrapper (nur HTTP-Calls, kein torch)
+                   Pakete mit eigener AI-Implementierung (kein extern Dep)
+                   Edu-Pakete die ML erklaeren ohne ML zu tun
+  [10:39:46] Nur A: Keyword in desc, KEIN AI-Lib-Dep ...
+    => 35,866  (101.6s)
+
+  Nur B (nicht in A):
+  Pakete die IN names_b sind (haben AI-Lib-Dep)
+  aber KEIN High-Conf-Keyword in der description haben
+  Typische Faelle: knappe description ('Helper for my project')
+                   leere/fehlende description
+                   Utility-Pakete die torch nutzen ohne es zu erwaehnen
+  HINWEIS: Nur-B < B - (A∩B), weil ~2.555 B-Pakete in depsPackages fehlen
+  [10:41:28] Nur B: AI-Lib-Dep, KEIN Keyword in desc ...
+    => 37,949  (9.8s)
+
+  VENN-DIAGRAMM (Signal A = PyPI-Desc, Signal B = AI-Lib-Dep):
+
+    ┌─────────────────────────────────────────────────┐
+    │  ALLE 772,267 PyPI-Pakete                   │
+    │                                                 │
+    │  ┌──────────────┬──────────────┐               │
+    │  │   nur A      │   A und B    │  nur B        │
+    │  │    35,866   │     26,908   │    37,949   │
+    │  └──────────────┴──────────────┘               │
+    │                                                 │
+    │  Nicht-AI:  671,544                      │
+    └─────────────────────────────────────────────────┘
+
+    A ∪ B (Treatment-Gruppe H7): 100,723  (13.04%)
+
+    Zusatzinfo: 0 Pakete aus Signal B existieren nicht in
+    depsPackages (geloescht, umbenannt, kein PYPI-System-Tag).
+    Diese sind in B=64,857 enthalten aber nicht in der Union-Rechnung.
+
+========================================================================
+BLOCK 7 — Zeitliche Verteilung (Gruendungsjahr)
+========================================================================
+  Wo: depsPackages.packageInformation.createdAt (Unix-Timestamp)
+  Konvertierung: $toDate + $multiply(1000) -> Datetime -> $year
+  Filter: > 1.000.000.000 um 0-Werte / fehlerhafte Timestamps auszuschliessen
+
+  Alle PyPI-Pakete je Gruendungsjahr:
+  [10:41:38] Alle Pakete je Jahr ...
+    Jahr 2005: 30
+    Jahr 2006: 146
+    Jahr 2007: 316
+    Jahr 2008: 773
+    Jahr 2009: 1,364
+    Jahr 2010: 2,052
+    Jahr 2011: 2,863
+    Jahr 2012: 4,347
+    Jahr 2013: 6,608
+    Jahr 2014: 8,700
+    Jahr 2015: 11,650
+    Jahr 2016: 15,609
+    Jahr 2017: 18,354
+    Jahr 2018: 24,920
+    Jahr 2019: 33,820
+    Jahr 2020: 48,988
+    Jahr 2021: 55,625
+    Jahr 2022: 60,671
+    Jahr 2023: 76,477
+    Jahr 2024: 90,196
+    Jahr 2025: 140,102
+    Jahr 2026: 155,113
+    (4.6s, 22 Zeilen gesamt)
+
+  AI-Pakete (Signal A High-Conf) je Gruendungsjahr:
+  Zeigt: Ist der AI-Anteil nach Nov. 2022 gestiegen? (visueller Pre-Test H7)
+  [10:41:42] AI-Pakete je Gruendungsjahr ...
+    Jahr 2007: 1
+    Jahr 2008: 4
+    Jahr 2009: 6
+    Jahr 2010: 4
+    Jahr 2011: 11
+    Jahr 2012: 15
+    Jahr 2013: 30
+    Jahr 2014: 34
+    Jahr 2015: 86
+    Jahr 2016: 166
+    Jahr 2017: 362
+    Jahr 2018: 758
+    Jahr 2019: 1,297
+    Jahr 2020: 2,078
+    Jahr 2021: 2,480
+    Jahr 2022: 2,704
+    Jahr 2023: 4,927
+    Jahr 2024: 7,087
+    Jahr 2025: 15,292
+    Jahr 2026: 25,406
+    (106.3s, 20 Zeilen gesamt)
+
+========================================================================
+BLOCK 8 — Visualisierungen (Matplotlib PNG-Export)
+========================================================================
+  Alle Grafiken werden im selben Ordner wie das Script gespeichert.
+  Grafik gespeichert: viz_01_ai_share.png
+  Grafik gespeichert: viz_02_tier_breakdown.png
+  viz_03: Keine Keyword-Daten verfuegbar.
+  Grafik gespeichert: viz_04_timeline.png
+  Grafik gespeichert: viz_05_top_dep_libs.png
+  Grafik gespeichert: viz_06_venn_breakdown.png
+
+########################################################################
+ZUSAMMENFASSUNG UND INTERPRETATION
+########################################################################
+
+  GRUNDGROESSEN:
+    PyPI-Pakete (unique):                    772,267
+    Pakete im Dep-Graph (unique):            748,413  (96.91%)
+    GitHub-Projekte:                         396,020
+
+  SIGNAL A — Keywords in packageInformation.description:
+    High-Conf (Hauptmass):                         0  (0.00%)
+    High+Medium (Sensitivitaet):                   0  (0.00%)
+    Delta Medium:                                  0
+
+  SIGNAL B — AI-Library als depth=1-Dep (depsPackagesDependencies):
+    Alle Tiers:                               64,857  (8.67% der Dep-Pakete)
+    Tier 1 (Dilhara 2021):                    41,402
+    Tier 2 (Foundation Models):               29,030
+    Tier 3 (ML-Oekosystem):                   12,411
+    Multi-Tier (T1+T2):                        8,750
+
+  SIGNAL A2 — Keywords in GitHub-Repo-Description (depsProjects.description):
+    GitHub-Projekte mit AI-Keyword:           33,585  (8.48%)
+    (Vergleich: Signal A in PyPI-Desc:             0  (0.00%))
+
+  SIGNAL C — GitHub-Topics (depsProjectsPanel):
+    Unique Projekte mit AI-Topic:                  0  (0.00%)
+
+  VENN-DIAGRAMM A und B:
+    Nur Signal A:                             35,866
+    Nur Signal B:                             37,949
+    Signal A AND B:                           26,908
+    Signal A UNION B (HAUPTMASS H7):         100,723  (13.04%)
+
+  INTERPRETATION:
+    13.04% der PyPI-Pakete haben eine nachweisbare KI-Komponente.
+    Das sind die 100,723 Pakete die als Treatment-Gruppe in H7 dienen.
+    Die 671,544 Nicht-KI-Pakete bilden die Kontrollgruppe.
+    Robustheitscheck: Intersection A AND B = 26,908 (3.48%)
+    -> Ergebnis stabil zwischen 3.48% und 13.04%
+
+Fertig: 2026-07-11T10:43:31
+Textdump:  /Users/mplcone/Desktop/Bachelorarbeit/Marie/Marie/Outputs/count_signals_v2_results.txt
+JSON-Dump: /Users/mplcone/Desktop/Bachelorarbeit/Marie/Marie/Outputs/count_signals_v2_results.json

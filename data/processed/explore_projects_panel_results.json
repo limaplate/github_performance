@@ -1,0 +1,45 @@
+{
+  "n_total": 7388259,
+  "n_distinct_projects": 0,
+  "n_projects_total": 243563,
+  "panel_coverage_pct": 0.0,
+  "sample_fields": [
+    "_id",
+    "commitAuthors",
+    "commitCommitters",
+    "authorHHI",
+    "authors",
+    "commits",
+    "committerHHI",
+    "committers",
+    "contributors",
+    "commitsAdditions",
+    "commitsDeletions",
+    "commitsTotal",
+    "commitsProcessedAt"
+  ],
+  "snapshots_per_project_dist": [
+    {
+      "bucket": "60+",
+      "count": 1
+    }
+  ],
+  "all_field_paths": [
+    "_id.nameWithOwner",
+    "_id.date",
+    "commitAuthors",
+    "commitCommitters",
+    "authorHHI",
+    "authors",
+    "commits",
+    "committerHHI",
+    "committers",
+    "contributors",
+    "commitsAdditions",
+    "commitsDeletions",
+    "commitsTotal",
+    "commitsProcessedAt"
+  ],
+  "field_commits_sample_pct": 100,
+  "field_contributors_sample_pct": 100
+}

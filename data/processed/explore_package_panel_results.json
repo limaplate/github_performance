@@ -1,0 +1,40 @@
+{
+  "n_total": 5778469,
+  "n_distinct_packages": 270503,
+  "avg_snapshots": 21.4,
+  "date_min": "2010-04-01 00:00:00",
+  "date_max": "2024-06-01 00:00:00",
+  "n_distinct_dates": 171,
+  "dates_first6": [
+    "2010-04-01 00:00:00",
+    "2010-05-01 00:00:00",
+    "2010-06-01 00:00:00",
+    "2010-07-01 00:00:00",
+    "2010-08-01 00:00:00",
+    "2010-09-01 00:00:00"
+  ],
+  "dates_last6": [
+    "2024-01-01 00:00:00",
+    "2024-02-01 00:00:00",
+    "2024-03-01 00:00:00",
+    "2024-04-01 00:00:00",
+    "2024-05-01 00:00:00",
+    "2024-06-01 00:00:00"
+  ],
+  "fill_dependentCount": 500,
+  "fill_dependentCountDirect": 500,
+  "fill_dependentCountIndirect": 500,
+  "fill_dependencyCount": 500,
+  "fill_dependencyCountDirect": 500,
+  "fill_project": 325,
+  "fill_project_commits": 323,
+  "fill_project_contributors": 323,
+  "fill_project_commitsAdditions": 76,
+  "fill_project_commitsDeletions": 76,
+  "fill_project_authorHHI": 323,
+  "fill_project_authors": 323,
+  "n_with_project": 3421879,
+  "pct_with_project": 59.22,
+  "n_distinct_pkgs_with_project": 160008,
+  "torch_n_snapshots": 93
+}

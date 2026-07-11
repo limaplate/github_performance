@@ -1,0 +1,178 @@
+{
+  "n_total_entries": 5905744,
+  "n_distinct_packages": 524609,
+  "n_with_createdAt": 5905744,
+  "pct_with_createdAt": 100.0,
+  "createdAt_example_type": "int",
+  "createdAt_example_value": "1502709342",
+  "versions_per_package_distribution": [
+    {
+      "bucket": "1",
+      "count": 145918
+    },
+    {
+      "bucket": "2",
+      "count": 70848
+    },
+    {
+      "bucket": "3",
+      "count": 87953
+    },
+    {
+      "bucket": "5",
+      "count": 99230
+    },
+    {
+      "bucket": "10",
+      "count": 77331
+    },
+    {
+      "bucket": "25",
+      "count": 26216
+    },
+    {
+      "bucket": "50",
+      "count": 10371
+    },
+    {
+      "bucket": "100+",
+      "count": 6742
+    }
+  ],
+  "n_single_version_packages": 145918,
+  "n_multi_version_packages": 378691,
+  "transformers_example_versions": 30,
+  "pilot": {
+    "sample_size": 1000,
+    "ai_native": 755,
+    "ai_boosted": 245,
+    "only_one_version": 198,
+    "missing_timestamps": 0,
+    "pct_native_of_classified": 75.5,
+    "pct_boosted_of_classified": 24.5
+  },
+  "adoption_by_year": [
+    {
+      "year": 2013,
+      "count": 2
+    },
+    {
+      "year": 2014,
+      "count": 6
+    },
+    {
+      "year": 2015,
+      "count": 23
+    },
+    {
+      "year": 2016,
+      "count": 80
+    },
+    {
+      "year": 2017,
+      "count": 274
+    },
+    {
+      "year": 2018,
+      "count": 726
+    },
+    {
+      "year": 2019,
+      "count": 1623
+    },
+    {
+      "year": 2020,
+      "count": 3091
+    },
+    {
+      "year": 2021,
+      "count": 3721
+    },
+    {
+      "year": 2022,
+      "count": 4446
+    },
+    {
+      "year": 2023,
+      "count": 8610
+    },
+    {
+      "year": 2024,
+      "count": 5742
+    }
+  ],
+  "native_boosted_by_year": [
+    {
+      "year": 2013,
+      "native": 1,
+      "boosted": 1,
+      "avg_lag_months": null
+    },
+    {
+      "year": 2014,
+      "native": 1,
+      "boosted": 5,
+      "avg_lag_months": 9.0
+    },
+    {
+      "year": 2015,
+      "native": 12,
+      "boosted": 11,
+      "avg_lag_months": 9.4
+    },
+    {
+      "year": 2016,
+      "native": 42,
+      "boosted": 38,
+      "avg_lag_months": 7.9
+    },
+    {
+      "year": 2017,
+      "native": 170,
+      "boosted": 104,
+      "avg_lag_months": 5.0
+    },
+    {
+      "year": 2018,
+      "native": 438,
+      "boosted": 288,
+      "avg_lag_months": 7.2
+    },
+    {
+      "year": 2019,
+      "native": 1063,
+      "boosted": 560,
+      "avg_lag_months": 5.5
+    },
+    {
+      "year": 2020,
+      "native": 2107,
+      "boosted": 984,
+      "avg_lag_months": 6.1
+    },
+    {
+      "year": 2021,
+      "native": 2585,
+      "boosted": 1136,
+      "avg_lag_months": 7.2
+    },
+    {
+      "year": 2022,
+      "native": 3206,
+      "boosted": 1240,
+      "avg_lag_months": 8.5
+    },
+    {
+      "year": 2023,
+      "native": 6481,
+      "boosted": 2129,
+      "avg_lag_months": 9.2
+    },
+    {
+      "year": 2024,
+      "native": 4479,
+      "boosted": 1263,
+      "avg_lag_months": 9.4
+    }
+  ]
+}

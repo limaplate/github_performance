@@ -1,0 +1,280 @@
+{
+  "n_packages": 524609,
+  "n_projects_total": 243563,
+  "n_projects_github": 235597,
+  "n_packages_with_repo_link": 249948,
+  "n_packages_without_repo_link": 274661,
+  "n_distinct_repos_from_packages": 218382,
+  "n_repos_without_package_link": 25175,
+  "crawl_is_pypi_first": false,
+  "repos_without_link_sample": [
+    {
+      "name": "supernnova/supernnova",
+      "type": "GITHUB"
+    },
+    {
+      "name": "mrsmn/ares",
+      "type": "GITHUB"
+    },
+    {
+      "name": "blaa/baryssh",
+      "type": "GITHUB"
+    },
+    {
+      "name": "joequant/algobroker",
+      "type": "GITHUB"
+    },
+    {
+      "name": "sameeul/argolid",
+      "type": "GITHUB"
+    }
+  ],
+  "top_repos_by_package_count": [
+    {
+      "repo": "pypa/sampleproject",
+      "n_packages": 3413,
+      "package_examples": [
+        "match-package-konamizer",
+        "scfl",
+        "pkg-luishidalgogt2003",
+        "gmail-sms",
+        "proco-pkg-kamalneel81"
+      ]
+    },
+    {
+      "repo": "youtype/mypy_boto3_builder",
+      "n_packages": 787,
+      "package_examples": [
+        "types-aiobotocore-billingconductor",
+        "mypy-boto3-kendra-ranking",
+        "mypy-boto3-acm-pca",
+        "types-aiobotocore-sesv2",
+        "mypy-boto3-taxsettings"
+      ]
+    },
+    {
+      "repo": "oca/sale-workflow",
+      "n_packages": 529,
+      "package_examples": [
+        "odoo-addon-sale-custom-rounding",
+        "odoo-addon-sale-exception-holidays-public",
+        "odoo12-addon-sale-shipping-info-helper",
+        "odoo-addon-sale-order-amount-to-invoice",
+        "odoo13-addon-sale-isolated-quotation"
+      ]
+    },
+    {
+      "repo": "aliyun/alibabacloud-python-sdk",
+      "n_packages": 510,
+      "package_examples": [
+        "alibabacloud-dypls20170830",
+        "alibabacloud-snapshot20210315",
+        "alibabacloud-ddospro20170725",
+        "alibabacloud-jarvis20180206",
+        "alibabacloud-ebs20210730"
+      ]
+    },
+    {
+      "repo": "oca/purchase-workflow",
+      "n_packages": 418,
+      "package_examples": [
+        "odoo13-addon-purchase-stock-secondary-unit",
+        "odoo12-addon-purchase-order-uninvoiced-amount",
+        "odoo12-addon-purchase-requisition-auto-rfq",
+        "odoo12-addon-purchase-security",
+        "odoo-addon-purchase-work-acceptance-tier-validation"
+      ]
+    },
+    {
+      "repo": "pywinrt/pywinrt",
+      "n_packages": 407,
+      "package_examples": [
+        "winrt-windows-devices-bluetooth-advertisement",
+        "winrt-windows-ui-uiautomation",
+        "winrt-windows-devices-pwm-provider",
+        "winrt-windows-ui-input-inking",
+        "winrt-microsoft-ui-xaml-media-media3d"
+      ]
+    },
+    {
+      "repo": "oca/stock-logistics-warehouse",
+      "n_packages": 396,
+      "package_examples": [
+        "odoo14-addon-stock-move-location",
+        "odoo14-addon-procurement-auto-create-group-by-product",
+        "odoo13-addon-stock-move-packaging-qty",
+        "odoo14-addon-stock-inventory-include-exhausted",
+        "odoo-addon-stock-product-qty-by-packaging"
+      ]
+    },
+    {
+      "repo": "thejcannon/botocore-a-la-carte",
+      "n_packages": 392,
+      "package_examples": [
+        "botocore-a-la-carte-redshift-serverless",
+        "botocore-a-la-carte-ecs",
+        "botocore-a-la-carte-codepipeline",
+        "botocore-a-la-carte-appstream",
+        "botocore-a-la-carte-apigatewayv2"
+      ]
+    },
+    {
+      "repo": "azure/azure-sdk-for-python",
+      "n_packages": 384,
+      "package_examples": [
+        "azure-mgmt-managementpartner",
+        "azure-template",
+        "azure-mgmt-loadtesting",
+        "corehttp",
+        "microsoft-bing-newssearch"
+      ]
+    },
+    {
+      "repo": "aliyun/alibabacloud-python2-sdk",
+      "n_packages": 374,
+      "package_examples": [
+        "alibabacloud-cloudapi20160701-py2",
+        "alibabacloud-ens20171110-py2",
+        "alibabacloud-objectdet20191230-py2",
+        "alibabacloud-dbfs20200418-py2",
+        "alibabacloud-nlb20220430-py2"
+      ]
+    },
+    {
+      "repo": "oca/stock-logistics-workflow",
+      "n_packages": 348,
+      "package_examples": [
+        "odoo12-addon-stock-picking-late-activity",
+        "odoo-addon-stock-picking-customer-ref",
+        "odoo12-addon-stock-picking-show-backorder",
+        "odoo13-addon-sale-order-global-stock-route",
+        "odoo-addon-stock-quant-package-dimension-total-weight-from-packaging"
+      ]
+    },
+    {
+      "repo": "alipay/antchain-openapi-prod-sdk",
+      "n_packages": 333,
+      "package_examples": [
+        "antchain-ak-0df89d5e4d7c43858a27b23bd9a37f9e",
+        "antchain-arec",
+        "antchain-ak-2623b038e4c247ec990dd7cecc4de999",
+        "antchain-ak-bc907d13969a4eb68852866122b96ffd",
+        "antchain-ak-dc040d759c7a442f89b4b6590b1e39a0"
+      ]
+    },
+    {
+      "repo": "oca/web",
+      "n_packages": 331,
+      "package_examples": [
+        "odoo11-addon-web-widget-datepicker-options",
+        "odoo14-addon-web-widget-image-webcam",
+        "odoo12-addon-web-notify",
+        "odoo-addon-web-dashboard-tile",
+        "odoo12-addon-web-widget-open-tab"
+      ]
+    },
+    {
+      "repo": "oca/partner-contact",
+      "n_packages": 316,
+      "package_examples": [
+        "odoo11-addon-partner-multi-name",
+        "odoo13-addon-partner-deduplicate-acl",
+        "odoo12-addon-partner-deduplicate-acl",
+        "odoo-addon-base-partner-company-group",
+        "odoo14-addon-partner-deduplicate-acl"
+      ]
+    },
+    {
+      "repo": "aws/aws-cdk",
+      "n_packages": 316,
+      "package_examples": [
+        "aws-cdk-aws-s3-notifications",
+        "aws-cdk-cdk-assets-schema",
+        "aws-cdk-core",
+        "aws-cdk-aws-iot-actions",
+        "aws-cdk-integ-tests"
+      ]
+    },
+    {
+      "repo": "oca/account-invoicing",
+      "n_packages": 310,
+      "package_examples": [
+        "odoo14-addon-account-invoice-date-due",
+        "odoo11-addon-account-invoice-tier-validation",
+        "odoo-addon-account-invoice-refund-reason",
+        "odoo-addon-account-move-tier-validation-forward",
+        "odoo14-addon-account-invoice-partner"
+      ]
+    },
+    {
+      "repo": "oca/product-attribute",
+      "n_packages": 301,
+      "package_examples": [
+        "odoo14-addon-product-attribute-archive",
+        "odoo13-addon-product-lot-sequence",
+        "odoo14-addon-product-pricelist-direct-print-company-group",
+        "odoo12-addon-product-multi-price",
+        "odoo12-addon-product-template-copy-attributes"
+      ]
+    },
+    {
+      "repo": "oca/server-tools",
+      "n_packages": 297,
+      "package_examples": [
+        "odoo14-addon-attachment-queue",
+        "odoo12-addon-excel-import-export",
+        "odoo11-addon-sql-request-abstract",
+        "odoo11-addon-onchange-helper",
+        "odoo12-addon-html-image-url-extractor"
+      ]
+    },
+    {
+      "repo": "oca/l10n-spain",
+      "n_packages": 289,
+      "package_examples": [
+        "odoo14-addon-l10n-es-account-statement-import-n43",
+        "odoo13-addon-l10n-es-ticketbai-api-batuz",
+        "odoo-addon-l10n-es-dua-ticketbai-batuz",
+        "odoo14-addon-l10n-es-vat-book",
+        "odoo14-addon-l10n-es-aeat-sii-oss"
+      ]
+    },
+    {
+      "repo": "airbytehq/airbyte",
+      "n_packages": 265,
+      "package_examples": [
+        "airbyte-source-quickbooks",
+        "airbyte-source-sentry",
+        "airbyte-source-harness",
+        "airbyte-source-linkedin-ads",
+        "airbyte-source-gitlab"
+      ]
+    }
+  ],
+  "packages_per_repo_distribution": [
+    {
+      "bucket": "1",
+      "count": 211796
+    },
+    {
+      "bucket": "2",
+      "count": 4922
+    },
+    {
+      "bucket": "3",
+      "count": 998
+    },
+    {
+      "bucket": "5",
+      "count": 353
+    },
+    {
+      "bucket": "10",
+      "count": 226
+    },
+    {
+      "bucket": "50+",
+      "count": 87
+    }
+  ]
+}

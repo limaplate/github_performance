@@ -1,0 +1,874 @@
+{
+  "n_pypi_raw": 524609,
+  "n_github_raw": 235597,
+  "n_deps_raw": 5905744,
+  "n_pypi_packages": 524609,
+  "n_deps_unique_packages": 524609,
+  "n_projects_unique": 235597,
+  "n_packages_with_description": 376479,
+  "signal_a_high_conf": 19444,
+  "signal_a_combined": 21057,
+  "signal_a_per_keyword_high": [
+    {
+      "keyword": "ai_term",
+      "count": 2748,
+      "pattern": "\\bai\\b"
+    },
+    {
+      "keyword": "machine_learning",
+      "count": 2611,
+      "pattern": "machine[\\s\\-_]?learning"
+    },
+    {
+      "keyword": "pytorch_ref",
+      "count": 2509,
+      "pattern": "\\bpytorch\\b"
+    },
+    {
+      "keyword": "deep_learning",
+      "count": 1343,
+      "pattern": "deep[\\s\\-_]?learning"
+    },
+    {
+      "keyword": "llm",
+      "count": 1228,
+      "pattern": "\\bllms?\\b"
+    },
+    {
+      "keyword": "neural_network",
+      "count": 1189,
+      "pattern": "neural[\\s\\-_]?net(?:work)?s?"
+    },
+    {
+      "keyword": "ml_abbreviation",
+      "count": 1078,
+      "pattern": "\\bml\\b"
+    },
+    {
+      "keyword": "openai_ref",
+      "count": 782,
+      "pattern": "\\bopenai\\b"
+    },
+    {
+      "keyword": "tensorflow_ref",
+      "count": 780,
+      "pattern": "\\btensorflow\\b"
+    },
+    {
+      "keyword": "nlp",
+      "count": 723,
+      "pattern": "\\bnlp\\b"
+    },
+    {
+      "keyword": "llama_ref",
+      "count": 675,
+      "pattern": "\\bllama[\\s\\-_]?\\d?\\b"
+    },
+    {
+      "keyword": "language_model",
+      "count": 517,
+      "pattern": "\\blanguage[\\s\\-_]?model"
+    },
+    {
+      "keyword": "natural_language",
+      "count": 489,
+      "pattern": "natural[\\s\\-_]?language"
+    },
+    {
+      "keyword": "reinforcement_learning",
+      "count": 481,
+      "pattern": "reinforcement[\\s\\-_]?learning"
+    },
+    {
+      "keyword": "chatbot",
+      "count": 429,
+      "pattern": "chat[\\s\\-_]?(?:bot|model|assistant)"
+    },
+    {
+      "keyword": "gpt_generic",
+      "count": 376,
+      "pattern": "\\bgpt\\b"
+    },
+    {
+      "keyword": "chatgpt_ref",
+      "count": 350,
+      "pattern": "\\bchatgpt\\b"
+    },
+    {
+      "keyword": "computer_vision",
+      "count": 326,
+      "pattern": "computer[\\s\\-_]?vision"
+    },
+    {
+      "keyword": "transformer",
+      "count": 313,
+      "pattern": "\\btransformer\\b"
+    },
+    {
+      "keyword": "pretrained",
+      "count": 241,
+      "pattern": "pre[\\s\\-_]?train(?:ed?|ing)?\\b"
+    },
+    {
+      "keyword": "large_language_model",
+      "count": 232,
+      "pattern": "large[\\s\\-_]?language[\\s\\-_]?model"
+    },
+    {
+      "keyword": "text_to_speech",
+      "count": 227,
+      "pattern": "text[\\s\\-_]?to[\\s\\-_]?speech|\\btts\\b"
+    },
+    {
+      "keyword": "tokenization",
+      "count": 215,
+      "pattern": "\\btokeniz(?:er|ation|ing)\\b"
+    },
+    {
+      "keyword": "langchain_ref",
+      "count": 208,
+      "pattern": "\\blangchain\\b"
+    },
+    {
+      "keyword": "huggingface_ref",
+      "count": 205,
+      "pattern": "hugg?ing[\\s\\-_]?face"
+    },
+    {
+      "keyword": "object_detection",
+      "count": 167,
+      "pattern": "object[\\s\\-_]?detect(?:ion|or)"
+    },
+    {
+      "keyword": "gpt_versioned",
+      "count": 160,
+      "pattern": "\\bgpt[\\s\\-_]?\\d"
+    },
+    {
+      "keyword": "automl",
+      "count": 152,
+      "pattern": "auto[\\s\\-_]?ml"
+    },
+    {
+      "keyword": "vector_store",
+      "count": 145,
+      "pattern": "vector[\\s\\-_]?(?:store|database|search)"
+    },
+    {
+      "keyword": "fine_tuning",
+      "count": 145,
+      "pattern": "fine[\\s\\-_]?tun(?:ing|ed?|e)\\b"
+    },
+    {
+      "keyword": "artificial_intelligence",
+      "count": 143,
+      "pattern": "artificial[\\s\\-_]?intelligence"
+    },
+    {
+      "keyword": "bert_ref",
+      "count": 131,
+      "pattern": "\\bbert\\b"
+    },
+    {
+      "keyword": "image_classification",
+      "count": 112,
+      "pattern": "image[\\s\\-_]?class(?:ification)?"
+    },
+    {
+      "keyword": "gemini_ref",
+      "count": 109,
+      "pattern": "\\bgemini\\b"
+    },
+    {
+      "keyword": "sentiment_analysis",
+      "count": 107,
+      "pattern": "sentiment[\\s\\-_]?(?:analysis|classification)"
+    },
+    {
+      "keyword": "speech_recognition",
+      "count": 105,
+      "pattern": "speech[\\s\\-_]?recogni(?:tion|zer)"
+    },
+    {
+      "keyword": "rag",
+      "count": 104,
+      "pattern": "\\brag\\b"
+    },
+    {
+      "keyword": "generative_ai",
+      "count": 102,
+      "pattern": "gen(?:erative)?[\\s\\-_]?ai\\b"
+    },
+    {
+      "keyword": "image_segmentation",
+      "count": 91,
+      "pattern": "image[\\s\\-_]?segment(?:ation)?"
+    },
+    {
+      "keyword": "mlops",
+      "count": 87,
+      "pattern": "\\bmlops?\\b"
+    },
+    {
+      "keyword": "text_generation",
+      "count": 86,
+      "pattern": "text[\\s\\-_]?generat(?:ion|or|ive)"
+    },
+    {
+      "keyword": "word_embedding",
+      "count": 86,
+      "pattern": "(?:word|sentence|text)[\\s\\-_]?embed"
+    },
+    {
+      "keyword": "text_classification",
+      "count": 77,
+      "pattern": "text[\\s\\-_]?class(?:ification)?"
+    },
+    {
+      "keyword": "named_entity",
+      "count": 75,
+      "pattern": "named[\\s\\-_]?entity"
+    },
+    {
+      "keyword": "image_generation",
+      "count": 71,
+      "pattern": "image[\\s\\-_]?generat(?:ion|ive|or)"
+    },
+    {
+      "keyword": "gan",
+      "count": 67,
+      "pattern": "\\bgans?\\b"
+    },
+    {
+      "keyword": "stable_diffusion",
+      "count": 61,
+      "pattern": "stable[\\s\\-_]?diffusion"
+    },
+    {
+      "keyword": "generative_model",
+      "count": 59,
+      "pattern": "generative[\\s\\-_]?model"
+    },
+    {
+      "keyword": "transfer_learning",
+      "count": 48,
+      "pattern": "transfer[\\s\\-_]?learning"
+    },
+    {
+      "keyword": "diffusion_model",
+      "count": 48,
+      "pattern": "diffusion[\\s\\-_]?model"
+    },
+    {
+      "keyword": "gradient_boosting",
+      "count": 42,
+      "pattern": "gradient[\\s\\-_]?boost(?:ing)?"
+    },
+    {
+      "keyword": "foundation_model",
+      "count": 38,
+      "pattern": "foundation[\\s\\-_]?model"
+    },
+    {
+      "keyword": "semantic_search",
+      "count": 34,
+      "pattern": "semantic[\\s\\-_]?search"
+    },
+    {
+      "keyword": "retrieval_augmented",
+      "count": 32,
+      "pattern": "retrieval[\\s\\-_]?augmented"
+    },
+    {
+      "keyword": "mistral_ref",
+      "count": 30,
+      "pattern": "\\bmistral\\b"
+    },
+    {
+      "keyword": "prompt_engineering",
+      "count": 17,
+      "pattern": "prompt[\\s\\-_]?engineer"
+    },
+    {
+      "keyword": "vae",
+      "count": 13,
+      "pattern": "\\bvae\\b"
+    },
+    {
+      "keyword": "attention_mechanism",
+      "count": 10,
+      "pattern": "attention[\\s\\-_]?mechanism"
+    },
+    {
+      "keyword": "claude_model_ref",
+      "count": 5,
+      "pattern": "\\bclaude[\\s\\-_](?:api|model|3|opus|sonnet|haiku)"
+    }
+  ],
+  "n_github_with_description": 199043,
+  "signal_a2_github_high_conf": 11862,
+  "signal_a2_per_keyword_high": [
+    {
+      "keyword": "pytorch_ref",
+      "count": 1904,
+      "pattern": "\\bpytorch\\b"
+    },
+    {
+      "keyword": "machine_learning",
+      "count": 1785,
+      "pattern": "machine[\\s\\-_]?learning"
+    },
+    {
+      "keyword": "ai_term",
+      "count": 1394,
+      "pattern": "\\bai\\b"
+    },
+    {
+      "keyword": "deep_learning",
+      "count": 919,
+      "pattern": "deep[\\s\\-_]?learning"
+    },
+    {
+      "keyword": "neural_network",
+      "count": 825,
+      "pattern": "neural[\\s\\-_]?net(?:work)?s?"
+    },
+    {
+      "keyword": "llm",
+      "count": 666,
+      "pattern": "\\bllms?\\b"
+    },
+    {
+      "keyword": "ml_abbreviation",
+      "count": 663,
+      "pattern": "\\bml\\b"
+    },
+    {
+      "keyword": "tensorflow_ref",
+      "count": 615,
+      "pattern": "\\btensorflow\\b"
+    },
+    {
+      "keyword": "nlp",
+      "count": 443,
+      "pattern": "\\bnlp\\b"
+    },
+    {
+      "keyword": "openai_ref",
+      "count": 438,
+      "pattern": "\\bopenai\\b"
+    },
+    {
+      "keyword": "language_model",
+      "count": 381,
+      "pattern": "\\blanguage[\\s\\-_]?model"
+    },
+    {
+      "keyword": "reinforcement_learning",
+      "count": 374,
+      "pattern": "reinforcement[\\s\\-_]?learning"
+    },
+    {
+      "keyword": "natural_language",
+      "count": 299,
+      "pattern": "natural[\\s\\-_]?language"
+    },
+    {
+      "keyword": "chatbot",
+      "count": 250,
+      "pattern": "chat[\\s\\-_]?(?:bot|model|assistant)"
+    },
+    {
+      "keyword": "chatgpt_ref",
+      "count": 246,
+      "pattern": "\\bchatgpt\\b"
+    },
+    {
+      "keyword": "transformer",
+      "count": 238,
+      "pattern": "\\btransformer\\b"
+    },
+    {
+      "keyword": "gpt_generic",
+      "count": 235,
+      "pattern": "\\bgpt\\b"
+    },
+    {
+      "keyword": "computer_vision",
+      "count": 224,
+      "pattern": "computer[\\s\\-_]?vision"
+    },
+    {
+      "keyword": "pretrained",
+      "count": 194,
+      "pattern": "pre[\\s\\-_]?train(?:ed?|ing)?\\b"
+    },
+    {
+      "keyword": "text_to_speech",
+      "count": 158,
+      "pattern": "text[\\s\\-_]?to[\\s\\-_]?speech|\\btts\\b"
+    },
+    {
+      "keyword": "large_language_model",
+      "count": 149,
+      "pattern": "large[\\s\\-_]?language[\\s\\-_]?model"
+    },
+    {
+      "keyword": "tokenization",
+      "count": 144,
+      "pattern": "\\btokeniz(?:er|ation|ing)\\b"
+    },
+    {
+      "keyword": "huggingface_ref",
+      "count": 120,
+      "pattern": "hugg?ing[\\s\\-_]?face"
+    },
+    {
+      "keyword": "gpt_versioned",
+      "count": 120,
+      "pattern": "\\bgpt[\\s\\-_]?\\d"
+    },
+    {
+      "keyword": "object_detection",
+      "count": 111,
+      "pattern": "object[\\s\\-_]?detect(?:ion|or)"
+    },
+    {
+      "keyword": "fine_tuning",
+      "count": 102,
+      "pattern": "fine[\\s\\-_]?tun(?:ing|ed?|e)\\b"
+    },
+    {
+      "keyword": "bert_ref",
+      "count": 97,
+      "pattern": "\\bbert\\b"
+    },
+    {
+      "keyword": "artificial_intelligence",
+      "count": 94,
+      "pattern": "artificial[\\s\\-_]?intelligence"
+    },
+    {
+      "keyword": "automl",
+      "count": 88,
+      "pattern": "auto[\\s\\-_]?ml"
+    },
+    {
+      "keyword": "langchain_ref",
+      "count": 78,
+      "pattern": "\\blangchain\\b"
+    },
+    {
+      "keyword": "word_embedding",
+      "count": 76,
+      "pattern": "(?:word|sentence|text)[\\s\\-_]?embed"
+    },
+    {
+      "keyword": "sentiment_analysis",
+      "count": 73,
+      "pattern": "sentiment[\\s\\-_]?(?:analysis|classification)"
+    },
+    {
+      "keyword": "llama_ref",
+      "count": 71,
+      "pattern": "\\bllama[\\s\\-_]?\\d?\\b"
+    },
+    {
+      "keyword": "rag",
+      "count": 67,
+      "pattern": "\\brag\\b"
+    },
+    {
+      "keyword": "text_generation",
+      "count": 63,
+      "pattern": "text[\\s\\-_]?generat(?:ion|or|ive)"
+    },
+    {
+      "keyword": "gemini_ref",
+      "count": 60,
+      "pattern": "\\bgemini\\b"
+    },
+    {
+      "keyword": "image_generation",
+      "count": 59,
+      "pattern": "image[\\s\\-_]?generat(?:ion|ive|or)"
+    },
+    {
+      "keyword": "text_classification",
+      "count": 58,
+      "pattern": "text[\\s\\-_]?class(?:ification)?"
+    },
+    {
+      "keyword": "generative_ai",
+      "count": 57,
+      "pattern": "gen(?:erative)?[\\s\\-_]?ai\\b"
+    },
+    {
+      "keyword": "speech_recognition",
+      "count": 57,
+      "pattern": "speech[\\s\\-_]?recogni(?:tion|zer)"
+    },
+    {
+      "keyword": "generative_model",
+      "count": 55,
+      "pattern": "generative[\\s\\-_]?model"
+    },
+    {
+      "keyword": "gan",
+      "count": 55,
+      "pattern": "\\bgans?\\b"
+    },
+    {
+      "keyword": "image_classification",
+      "count": 55,
+      "pattern": "image[\\s\\-_]?class(?:ification)?"
+    },
+    {
+      "keyword": "vector_store",
+      "count": 54,
+      "pattern": "vector[\\s\\-_]?(?:store|database|search)"
+    },
+    {
+      "keyword": "stable_diffusion",
+      "count": 51,
+      "pattern": "stable[\\s\\-_]?diffusion"
+    },
+    {
+      "keyword": "named_entity",
+      "count": 50,
+      "pattern": "named[\\s\\-_]?entity"
+    },
+    {
+      "keyword": "image_segmentation",
+      "count": 48,
+      "pattern": "image[\\s\\-_]?segment(?:ation)?"
+    },
+    {
+      "keyword": "mlops",
+      "count": 46,
+      "pattern": "\\bmlops?\\b"
+    },
+    {
+      "keyword": "diffusion_model",
+      "count": 42,
+      "pattern": "diffusion[\\s\\-_]?model"
+    },
+    {
+      "keyword": "gradient_boosting",
+      "count": 38,
+      "pattern": "gradient[\\s\\-_]?boost(?:ing)?"
+    },
+    {
+      "keyword": "transfer_learning",
+      "count": 37,
+      "pattern": "transfer[\\s\\-_]?learning"
+    },
+    {
+      "keyword": "foundation_model",
+      "count": 27,
+      "pattern": "foundation[\\s\\-_]?model"
+    },
+    {
+      "keyword": "retrieval_augmented",
+      "count": 27,
+      "pattern": "retrieval[\\s\\-_]?augmented"
+    },
+    {
+      "keyword": "semantic_search",
+      "count": 23,
+      "pattern": "semantic[\\s\\-_]?search"
+    },
+    {
+      "keyword": "mistral_ref",
+      "count": 16,
+      "pattern": "\\bmistral\\b"
+    },
+    {
+      "keyword": "vae",
+      "count": 11,
+      "pattern": "\\bvae\\b"
+    },
+    {
+      "keyword": "attention_mechanism",
+      "count": 10,
+      "pattern": "attention[\\s\\-_]?mechanism"
+    },
+    {
+      "keyword": "claude_model_ref",
+      "count": 9,
+      "pattern": "\\bclaude[\\s\\-_](?:api|model|3|opus|sonnet|haiku)"
+    },
+    {
+      "keyword": "prompt_engineering",
+      "count": 7,
+      "pattern": "prompt[\\s\\-_]?engineer"
+    }
+  ],
+  "signal_b_any_tier": 28414,
+  "signal_b_tier1": 22680,
+  "signal_b_tier2": 7375,
+  "signal_b_tier3": 5585,
+  "signal_b_multi_tier": 3051,
+  "signal_b_top_libs": [
+    {
+      "lib": "scikit-learn",
+      "count": 11841,
+      "tier": "tier1_dilhara"
+    },
+    {
+      "lib": "torch",
+      "count": 8773,
+      "tier": "tier1_dilhara"
+    },
+    {
+      "lib": "tensorflow",
+      "count": 3444,
+      "tier": "tier1_dilhara"
+    },
+    {
+      "lib": "openai",
+      "count": 2850,
+      "tier": "tier2_foundation"
+    },
+    {
+      "lib": "transformers",
+      "count": 2797,
+      "tier": "tier2_foundation"
+    },
+    {
+      "lib": "torchvision",
+      "count": 2459,
+      "tier": "tier1_dilhara"
+    },
+    {
+      "lib": "nltk",
+      "count": 2223,
+      "tier": "tier1_dilhara"
+    },
+    {
+      "lib": "spacy",
+      "count": 1265,
+      "tier": "tier1_dilhara"
+    },
+    {
+      "lib": "keras",
+      "count": 1225,
+      "tier": "tier1_dilhara"
+    },
+    {
+      "lib": "langchain",
+      "count": 1005,
+      "tier": "tier2_foundation"
+    },
+    {
+      "lib": "datasets",
+      "count": 875,
+      "tier": "tier2_foundation"
+    },
+    {
+      "lib": "xgboost",
+      "count": 859,
+      "tier": "tier3_ecosystem"
+    },
+    {
+      "lib": "jax",
+      "count": 784,
+      "tier": "tier3_ecosystem"
+    },
+    {
+      "lib": "gensim",
+      "count": 678,
+      "tier": "tier3_ecosystem"
+    },
+    {
+      "lib": "sentence-transformers",
+      "count": 666,
+      "tier": "tier2_foundation"
+    },
+    {
+      "lib": "huggingface-hub",
+      "count": 665,
+      "tier": "tier2_foundation"
+    },
+    {
+      "lib": "pytorch-lightning",
+      "count": 661,
+      "tier": "tier3_ecosystem"
+    },
+    {
+      "lib": "wandb",
+      "count": 592,
+      "tier": "tier3_ecosystem"
+    },
+    {
+      "lib": "accelerate",
+      "count": 581,
+      "tier": "tier2_foundation"
+    },
+    {
+      "lib": "llama-index-core",
+      "count": 543,
+      "tier": "tier2_foundation"
+    }
+  ],
+  "intersect_a_and_b": 9888,
+  "only_signal_a": 9556,
+  "only_signal_b": 18526,
+  "union_a_or_b": 37970,
+  "signal_b_not_in_depspackages": 0,
+  "n_ai_topics_raw": 0,
+  "n_ai_topics_unique": 0,
+  "top_ai_topics": [],
+  "q4_packages_per_year": [
+    {
+      "year": 2005,
+      "count": 30
+    },
+    {
+      "year": 2006,
+      "count": 150
+    },
+    {
+      "year": 2007,
+      "count": 316
+    },
+    {
+      "year": 2008,
+      "count": 776
+    },
+    {
+      "year": 2009,
+      "count": 1375
+    },
+    {
+      "year": 2010,
+      "count": 2067
+    },
+    {
+      "year": 2011,
+      "count": 2893
+    },
+    {
+      "year": 2012,
+      "count": 4405
+    },
+    {
+      "year": 2013,
+      "count": 6668
+    },
+    {
+      "year": 2014,
+      "count": 8805
+    },
+    {
+      "year": 2015,
+      "count": 11802
+    },
+    {
+      "year": 2016,
+      "count": 15844
+    },
+    {
+      "year": 2017,
+      "count": 18707
+    },
+    {
+      "year": 2018,
+      "count": 25519
+    },
+    {
+      "year": 2019,
+      "count": 34926
+    },
+    {
+      "year": 2020,
+      "count": 50931
+    },
+    {
+      "year": 2021,
+      "count": 59066
+    },
+    {
+      "year": 2022,
+      "count": 67137
+    },
+    {
+      "year": 2023,
+      "count": 98388
+    },
+    {
+      "year": 2024,
+      "count": 104821
+    }
+  ],
+  "q4_ai_packages_per_year": [
+    {
+      "year": 2008,
+      "count": 1
+    },
+    {
+      "year": 2009,
+      "count": 1
+    },
+    {
+      "year": 2010,
+      "count": 3
+    },
+    {
+      "year": 2011,
+      "count": 6
+    },
+    {
+      "year": 2012,
+      "count": 6
+    },
+    {
+      "year": 2013,
+      "count": 12
+    },
+    {
+      "year": 2014,
+      "count": 12
+    },
+    {
+      "year": 2015,
+      "count": 35
+    },
+    {
+      "year": 2016,
+      "count": 75
+    },
+    {
+      "year": 2017,
+      "count": 175
+    },
+    {
+      "year": 2018,
+      "count": 489
+    },
+    {
+      "year": 2019,
+      "count": 956
+    },
+    {
+      "year": 2020,
+      "count": 1633
+    },
+    {
+      "year": 2021,
+      "count": 2052
+    },
+    {
+      "year": 2022,
+      "count": 2362
+    },
+    {
+      "year": 2023,
+      "count": 5154
+    },
+    {
+      "year": 2024,
+      "count": 6459
+    }
+  ]
+}
