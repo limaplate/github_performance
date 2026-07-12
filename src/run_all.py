@@ -28,7 +28,8 @@ _sys.path.insert(0, str(_Path(__file__).resolve().parent))
 from common.paths import get_output_dir
 
 _p = _argparse.ArgumentParser(add_help=False)
-_p.add_argument("--mongo-db", default="upstreamPackages")
+_p.add_argument("--mongo-db",  default="upstreamPackages")
+_p.add_argument("--mongo-uri", default=None)
 _args, _extra = _p.parse_known_args()
 
 SRC_DIR  = Path(__file__).resolve().parent
@@ -46,7 +47,12 @@ SCRIPTS = [
     ("05_regression/analyze_repo_features.py",     "OLS HC3 + Clustered SE + Stars-Plot"),
 ]
 
-MONGO_ARGS = _extra
+# Explizit erkannte Flags an Kind-Skripte weiterleiten
+MONGO_ARGS = list(_extra)
+if _args.mongo_db:
+    MONGO_ARGS += ["--mongo-db", _args.mongo_db]
+if _args.mongo_uri:
+    MONGO_ARGS += ["--mongo-uri", _args.mongo_uri]
 
 
 def ts():
