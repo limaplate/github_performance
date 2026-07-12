@@ -30,20 +30,24 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.db_config import get_mongo_uri
 
-MONGO_URI = get_mongo_uri()
-DB_NAME  = "upstreamPackages"
-OUT_JSON = Path(__file__).parent / "event_study_results.json"
+import argparse as _argparse
+_p = _argparse.ArgumentParser(add_help=False)
+_p.add_argument("--mongo-db", default="upstreamPackages")
+_args, _ = _p.parse_known_args()
 
-for _p in [
-    Path(__file__).parent / "ki_repo_mapping.json",
-    Path("/Users/lmpl/Desktop/Bachelorarbeit/Analyse/ki_repo_mapping.json"),
-    Path("/Users/lmpl/Desktop/Bachelorarbeit/ki_repo_mapping.json"),
-]:
-    if _p.exists():
-        KI_MAPPING_PATH = _p
-        break
-else:
-    raise FileNotFoundError("ki_repo_mapping.json nicht gefunden")
+import sys as _sys2
+from pathlib import Path as _Path2
+_sys2.path.insert(0, str(_Path2(__file__).resolve().parents[1]))
+from common.paths import get_output_dir as _get_output_dir
+
+MONGO_URI = get_mongo_uri()
+DB_NAME   = _args.mongo_db
+OUT_JSON  = Path(__file__).parent / "event_study_results.json"
+
+_OUT_DIR = _get_output_dir()
+KI_MAPPING_PATH = _OUT_DIR / "ki_repo_mapping.json"
+if not KI_MAPPING_PATH.exists():
+    raise FileNotFoundError(f"ki_repo_mapping.json nicht gefunden in {KI_MAPPING_PATH}")
 
 AI_LIBS = {
     "scikit-learn", "torch", "tensorflow", "torchvision", "nltk",
@@ -108,8 +112,9 @@ def main():
     db.command("ping")
     print(f"[{ts()}] Verbunden.\n")
 
-    deps_col   = db["depsPackagesDependencies"]
-    panel_col  = db["depsProjectsPanel"]
+    from common.compat_v2 import get_deps_collection, get_panel_collection
+    deps_col   = get_deps_collection(db)
+    panel_col  = get_panel_collection(db)
     pkg_col    = db["depsPackages"]
 
     results = {}

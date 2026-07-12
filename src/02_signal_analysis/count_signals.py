@@ -982,6 +982,38 @@ def main():
     log.write(f"  Link-Join: {n_pkg_with_repo_link:,} PyPI-Pakete haben links.repo")
     log.write(f"  Link-Join: {n_pkg_repo_link_matched:,} davon matchen ein depsProjects-Dokument (type=GITHUB)")
 
+    # ── Kennzahl 5: KI-Packages (A oder B) mit validem Repo-Link in depsProjects
+    # Nur Repos mit depsProjects-Eintrag haben Panel-Daten fuer spaetere Analysen.
+    log.write(f"  Kennzahl 5: KI-Packages (A oder B) mit validem Repo-Link in depsProjects...")
+    ki_pkg_rows = packages.find(
+        {
+            "_id.system": "PYPI",
+            "$or": [
+                {"packageInformation.description": {"$regex": HIGH_CONF_REGEX, "$options": "i"}},
+                {"packageInformation.dependencies.name": {"$in": ALL_AI_LIBS}}
+            ]
+        },
+        {"packageInformation.links.repo": 1, "links.repo": 1}
+    )
+    n_ki_with_repo_link    = 0
+    n_ki_repo_link_matched = 0
+    ki_linked_project_keys = set()
+    for pkg in ki_pkg_rows:
+        pkg_key = get_pkg_repo_url(pkg)
+        if not pkg_key:
+            continue
+        n_ki_with_repo_link += 1
+        if pkg_key in projects_by_link:
+            n_ki_repo_link_matched += 1
+            ki_linked_project_keys.add(pkg_key)
+
+    results["n_ki_pkg_with_repo_link"]    = n_ki_with_repo_link
+    results["n_ki_pkg_repo_link_matched"] = n_ki_repo_link_matched
+    log.write(f"    KI-Packages mit Repo-Link:                {n_ki_with_repo_link:,}")
+    log.write(f"    davon Link matched in depsProjects (KZ5): {n_ki_repo_link_matched:,}")
+    if n_ki_with_repo_link:
+        log.write(f"    Match-Rate: {100*n_ki_repo_link_matched/n_ki_with_repo_link:.1f}%")
+
     # =========================================================================
     # BLOCK 1 — GRUNDGROESSEN
     # =========================================================================
@@ -1053,15 +1085,50 @@ def main():
     # =========================================================================
     # BLOCK 3 — SIGNAL A: KI-KEYWORDS IN PACKAGE-BESCHREIBUNGEN
     # =========================================================================
-    # Was: Freitext-Matching in PyPI-Paketbeschreibungen
-    # Wo:  depsPackages.packageInformation.description
-    #      = kurzer Beschreibungstext des Pakets auf pypi.org
-    #      Beispiel: "TensorFlow is an open source machine learning framework"
-    #      NICHT GitHub-README, NICHT Commit-Messages
-    # Methode: MongoDB $regex, case-insensitive
-    # Ergebnis: Anzahl Pakete die sich SELBST als AI beschreiben
-    # =========================================================================
+    log.write(hdr("BLOCK 3 — Signal A: KI-Keywords in packageInformation.description"))
+    log.write("  SIGNAL A: Semantisches Signal")
+    log.write("  Wo: depsPackages.packageInformation.description")
+    log.write("  Das ist: Der kurze Beschreibungstext auf pypi.org")
+    log.write("  Nicht: GitHub-README, Commit-Messages, Topics")
 
+    n_has_desc = run_count(packages, {
+        "_id.system": "PYPI",
+        "packageInformation.description": {"$exists": True, "$nin": [None, ""]}
+    }, "Pakete mit nicht-leerer description", log)
+    results["n_packages_with_description"] = n_has_desc
+    if n_pypi_raw and n_has_desc:
+        log.write(f"    => {100*n_has_desc/n_pypi_raw:.1f}% aller Pakete haben Beschreibung")
+
+    log.write("\n  A1: High-Confidence-Keywords (Hauptmass Signal A)")
+    n_high = run_count(packages, {
+        "_id.system": "PYPI",
+        "packageInformation.description": {"$regex": HIGH_CONF_REGEX, "$options": "i"}
+    }, "Pakete mit mind. 1 High-Conf-Keyword in description", log)
+    results["signal_a_high_conf"] = n_high
+    if n_pypi_raw and n_high:
+        log.write(f"    => {100*n_high/n_pypi_raw:.2f}% aller PyPI-Pakete")
+
+    log.write("\n  A3: High+Medium-Keywords (Sensitivitaetscheck)")
+    n_combined = run_count(packages, {
+        "_id.system": "PYPI",
+        "packageInformation.description": {"$regex": COMBINED_REGEX, "$options": "i"}
+    }, "Pakete mit mind. 1 Keyword (High+Medium)", log)
+    results["signal_a_combined"] = n_combined
+    if n_pypi_raw and n_combined and n_high:
+        delta = n_combined - n_high
+        log.write(f"    => Delta zu High-Conf: +{delta:,} Pakete ({100*delta/n_high:.1f}% mehr)")
+
+    log.write("\n  A4: Einzelne Keywords (fuer viz_03)")
+    kw_counts = []
+    for kw_name, pattern in HIGH_CONF_KEYWORDS.items():
+        n = run_count(packages, {
+            "_id.system": "PYPI",
+            "packageInformation.description": {"$regex": pattern, "$options": "i"}
+        }, f"    keyword='{kw_name}'", log)
+        if n:
+            kw_counts.append({"keyword": kw_name, "count": n, "pattern": pattern})
+    kw_counts.sort(key=lambda x: x["count"], reverse=True)
+    results["signal_a_per_keyword_high"] = kw_counts
 
     # =========================================================================
     # BLOCK 3b — SIGNAL A2: KI-KEYWORDS IN GITHUB-REPO-DESCRIPTION
@@ -1122,6 +1189,24 @@ def main():
     kw_counts_gh.sort(key=lambda x: x["count"], reverse=True)
     results["signal_a2_per_keyword_high"] = kw_counts_gh
 
+    # ── Kennzahl 7: Projects mit KI-Keyword aber NICHT via KI-Package erreichbar
+    # = A2 \ (Repos die durch Signal A oder B gefunden wurden)
+    # Quantifiziert methodisch warum A2 nicht in die Hauptklassifizierung einfließt:
+    # Diese Repos haben kein KI-Package als Bruecke -> keine Versionsdaten,
+    # keine native/boosted-Klassifizierung moeglich.
+    log.write("\n  Kennzahl 7: Projects mit KI-Keyword (A2) aber NICHT via KI-Package erreichbar")
+    log.write("  = Repos die nur durch Repo-Description als KI erkennbar waeren")
+    n_a2_only = sum(
+        1 for p in linked_project_docs
+        if p.get("description")
+        and high_conf_re.search(p["description"])
+        and get_project_repo_url(p) not in ki_linked_project_keys
+    )
+    results["n_a2_only_not_via_package"] = n_a2_only
+    log.write(f"    => {n_a2_only:,} Projects nur via A2 erreichbar (nicht via KI-Package)")
+    if n_a2_high:
+        log.write(f"    => {100*n_a2_only/n_a2_high:.1f}% der A2-positiven Projekte waeren A2-only")
+    log.write(f"    Limitation: Diese Gruppe fehlt in der Hauptklassifizierung (kein Versionsdatensatz)")
 
     # =========================================================================
     # BLOCK 4 — SIGNAL B: KI-LIBRARY ALS DIREKTABHAENGIGKEIT
@@ -1329,26 +1414,18 @@ def main():
     #      repoData wird dort in jedem Snapshot gespeichert und enthaelt topics.
     #      In depsProjects steht nur das "Stammdokument" ohne vollstaendige repoData.
     # =========================================================================
-    ''' log.write(hdr("BLOCK 6 — Signal C: GitHub-Topics (Projekt-Ebene, depsProjectsPanel)"))
+    log.write(hdr("BLOCK 6 — Signal C: GitHub-Topics"))
     log.write("  SIGNAL C: Self-Labeling auf GitHub")
-    log.write("  Wo: depsProjectsPanel.repoData.topics")
-    log.write("  Das ist: Array von Topics die Entwickler manuell auf GitHub setzen")
-    log.write("  Beispiel: ['machine-learning', 'pytorch', 'nlp']")
-    log.write("  WICHTIG: repoData.topics fehlt in depsProjects (Field-Inventory geprueft)")
-    log.write("  Dedup in depsProjectsPanel: $group auf 'name' (='owner/repo')")
-    log.write("  da Panel mehrere Snapshots pro Projekt enthaelt")
+    log.write("  V1: depsProjectsPanel.repoData.topics | V2: depsProjects.repoData.topics")
+    log.write("  compat_v2 liefert einheitlich: { _id: {nameWithOwner}, topics: [...] }")
 
-    n_ai_topics_raw = run_count(proj_panel, {
-        "topics": {"$in": AI_TOPICS}
-    }, "Projekte mit AI-Topic (raw)", log)
-
+    # proj_panel ist bereits via get_topics_collection(db) gesetzt
     n_ai_topics_unique = run_agg_count(proj_panel, [
         {"$match": {"topics": {"$in": AI_TOPICS}}},
         {"$group": {"_id": "$_id.nameWithOwner"}},
-    ], "Unique Projekte mit AI-Topic (dedup via _id.nameWithOwner)", log)
+    ], "Unique Projekte mit AI-Topic", log)
 
     results.update({
-        "n_ai_topics_raw": n_ai_topics_raw,
         "n_ai_topics_unique": n_ai_topics_unique,
     })
 
@@ -1364,7 +1441,7 @@ def main():
         {"$sort": {"count": -1}},
         {"$limit": 20},
     ], "Top-20 AI-Topics", log, top_n=20)
-    results["top_ai_topics"] = [{"topic": r["_id"], "count": r["count"]} for r in rows_topics]'''
+    results["top_ai_topics"] = [{"topic": r["_id"], "count": r["count"]} for r in rows_topics]
 
     # =========================================================================
     # BLOCK 7 — ZEITLICHE VERTEILUNG
@@ -1468,10 +1545,21 @@ def main():
     log.write(f"    Tier 3 (ML-Oekosystem):               {(results.get('signal_b_tier3') or 0):>10,}")
     log.write(f"    Multi-Tier (T1+T2):                   {(results.get('signal_b_multi_tier') or 0):>10,}")
 
-    log.write(f"\n  SIGNAL A2 — Keywords in GitHub-Repo-Description (depsProjects.description):")
+    log.write(f"\n  KENNZAHL 5 — KI-Packages mit validem Repo-Link in depsProjects:")
+    n_kz5 = results.get("n_ki_pkg_repo_link_matched") or 0
+    n_ki_link = results.get("n_ki_pkg_with_repo_link") or 0
+    log.write(f"    KI-Packages mit Repo-Link:            {n_ki_link:>10,}")
+    log.write(f"    davon in depsProjects gefunden (KZ5): {n_kz5:>10,}  ({pct(n_kz5, n_ki_link)} der KI-Packages mit Link)")
+    log.write(f"    Bedeutung: Nur diese Repos koennen in Aktivitaets- und Regressionsanalyse einfliessen.")
+
+    log.write(f"\n  KONTROLLE A2 — Keywords in GitHub-Repo-Description (nicht in Hauptklassifizierung):")
     n_a2 = results.get("signal_a2_github_high_conf") or 0
+    n_a2_only = results.get("n_a2_only_not_via_package") or 0
     log.write(f"    GitHub-Projekte mit AI-Keyword:       {n_a2:>10,}  ({pct(n_a2, n_proj)})")
     log.write(f"    (Vergleich: Signal A in PyPI-Desc:    {n_a:>10,}  ({pct(n_a, n_total)}))")
+    log.write(f"\n  KENNZAHL 7 — Projects nur via A2 erreichbar (nicht via KI-Package):")
+    log.write(f"    A2-only (KZ7):                        {n_a2_only:>10,}  ({pct(n_a2_only, n_a2)} der A2-positiven)")
+    log.write(f"    Limitation: Diese Gruppe fehlt in Hauptklassifizierung (keine Versionsdaten).")
 
     log.write(f"\n  SIGNAL C — GitHub-Topics (depsProjectsPanel):")
     log.write(f"    Unique Projekte mit AI-Topic:         {n_c:>10,}  ({pct(n_c, n_proj)})")

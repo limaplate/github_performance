@@ -2,10 +2,16 @@
 build_ki_repo_mapping.py — Verknuepft KI-Packages mit GitHub-Repos
 
 Schritte:
-  1. Alle KI-Packages aus depsPackages (Signal A + B) laden
+  1. Alle KI-Packages aus depsPackages (Signal A oder B) laden
   2. Fuer jedes KI-Package: GitHub-Repo-Link aus packageInformation.projects[]
   3. AI-native vs. AI-boosted Label aus depsPackagesDependencies (createdAt)
-  4. Ergebnis: JSON mit Repo -> {is_ki, ki_type, ki_year, packages[]}
+  4. Ergebnis: JSON mit Repo -> {ki_type, boost_date, lag_months, ai_source, ...}
+
+Klassifizierung:
+  AI_PACKAGE = A (keyword in description) OR B (AI-lib als depth=1-dep)
+  NATIVE:  erste Version hatte bereits AI-dep
+  BOOSTED: AI-dep kam erst in spaeterer Version hinzu
+  Hierarchieregel bei Multi-Package-Repos: native > boosted > unknown
 
 Output: ki_repo_mapping.json
 """
@@ -21,9 +27,14 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.db_config import get_mongo_uri
 
+import argparse as _argparse
+_p = _argparse.ArgumentParser(add_help=False)
+_p.add_argument("--mongo-db", default="upstreamPackages")
+_args, _ = _p.parse_known_args()
+
 MONGO_URI = get_mongo_uri()
-DB_NAME  = "upstreamPackages"
-OUT_JSON = Path(__file__).parent / "ki_repo_mapping.json"
+DB_NAME   = _args.mongo_db
+OUT_JSON  = Path(__file__).parent / "ki_repo_mapping.json"
 
 # Signal-A Regex (High-Confidence Keywords)
 HIGH_CONF_REGEX = (
@@ -72,8 +83,9 @@ def main():
     db.command("ping")
     print(f"[{ts()}] Verbunden.\n")
 
+    from common.compat_v2 import get_deps_collection  # noqa: compat layer handles V1/V2
     packages = db["depsPackages"]
-    deps     = db["depsPackagesDependencies"]
+    deps     = get_deps_collection(db)
     results  = {}
 
     # ── Block 1: Alle KI-Packages mit Repo-Link ──────────────────────────────
@@ -93,10 +105,35 @@ def main():
             "_id": 1,
             "packageInformation.projects": 1,
             "packageInformation.createdAt": 1,
+            "packageInformation.description": 1,
+            "packageInformation.dependencies": 1,
         }
     ))
     print(f"  KI-Packages mit Repo-Link: {len(ki_with_repo):>8,}  ({time.time()-t0:.1f}s)")
     results["n_ki_packages_with_repo"] = len(ki_with_repo)
+
+    # ai_source pro Package bestimmen: welche Signale haben ausgeloest?
+    import re as _re
+    _high_conf_re = _re.compile(HIGH_CONF_REGEX, _re.IGNORECASE)
+    _ai_libs_set  = set(AI_LIBS)
+
+    def _get_ai_source(doc):
+        pi   = doc.get("packageInformation") or {}
+        desc = pi.get("description") or ""
+        deps = pi.get("dependencies") or []
+        has_a = bool(_high_conf_re.search(desc))
+        has_b = any(
+            d.get("name") in _ai_libs_set and d.get("depth") == 1
+            for d in deps
+        )
+        src = []
+        if has_a:
+            src.append("a")
+        if has_b:
+            src.append("b")
+        return src if src else ["unknown"]
+
+    pkg_ai_source = {doc["_id"]["name"]: _get_ai_source(doc) for doc in ki_with_repo}
 
     # ── Block 2: Package-Namen sammeln fuer native/boosted Lookup ────────────
     print(f"\n[{ts()}] Block 2: AI-native vs. AI-boosted klassifizieren...")
@@ -172,7 +209,8 @@ def main():
             "birth_year": 1,
             "lag_months": 1,
             "first_created": 1,
-            "first_ki_created": 1
+            "first_ki_created": 1,
+            "boost_date": "$first_ki_created"
         }}
     ], allowDiskUse=True))
     print(f"  Klassifizierung abgeschlossen: {len(classification_raw):,}  ({time.time()-t0:.1f}s)")
@@ -197,6 +235,7 @@ def main():
         pkg_name = doc["_id"]["name"]
         repos    = doc.get("packageInformation", {}).get("projects", [])
         clf      = pkg_classification.get(pkg_name)
+        ai_src   = pkg_ai_source.get(pkg_name, ["unknown"])
 
         for repo in repos:
             repo_name = repo.get("name")
@@ -205,37 +244,53 @@ def main():
 
             if repo_name not in repo_map:
                 repo_map[repo_name] = {
-                    "repo": repo_name,
-                    "packages": [],
-                    "ki_types": [],
-                    "ki_years": [],
+                    "repo":        repo_name,
+                    "packages":    [],
+                    "ki_types":    [],
+                    "ki_years":    [],
+                    "boost_dates": [],
+                    "lag_months":  [],
+                    "ai_sources":  [],
                 }
 
             repo_map[repo_name]["packages"].append(pkg_name)
+            repo_map[repo_name]["ai_sources"].extend(ai_src)
             if clf:
                 repo_map[repo_name]["ki_types"].append(clf["ki_type"])
                 if clf.get("ki_year"):
                     repo_map[repo_name]["ki_years"].append(clf["ki_year"])
+                if clf.get("boost_date") is not None:
+                    repo_map[repo_name]["boost_dates"].append(clf["boost_date"])
+                if clf.get("lag_months") is not None:
+                    repo_map[repo_name]["lag_months"].append(clf["lag_months"])
 
-    # Finalisiere: bei Repos mit mehreren Packages -> Mehrheitsentscheid
+    # Finalisiere: Hierarchieregel native > boosted > unknown
+    # Rationale: Ein Repo das von Beginn an eine KI-Dep hatte ist native,
+    # unabhaengig davon welche anderen Packages noch im selben Repo liegen.
     final_repos = []
     for repo_name, info in repo_map.items():
-        types  = info["ki_types"]
-        n_nat  = types.count("native")
-        n_boo  = types.count("boosted")
-        years  = info["ki_years"]
+        types       = info["ki_types"]
+        years       = info["ki_years"]
+        boost_dates = info["boost_dates"]
+        lag_months  = info["lag_months"]
+        ai_sources  = sorted(set(info["ai_sources"]))
 
-        if types:
-            ki_type = "native" if n_nat >= n_boo else "boosted"
+        if "native" in types:
+            ki_type = "native"
+        elif "boosted" in types:
+            ki_type = "boosted"
         else:
             ki_type = "unknown"
 
         final_repos.append({
-            "repo":        repo_name,
-            "ki_type":     ki_type,
-            "ki_year":     min(years) if years else None,
-            "n_packages":  len(info["packages"]),
-            "packages":    info["packages"][:5],
+            "repo":       repo_name,
+            "ki_type":    ki_type,
+            "ki_year":    min(years) if years else None,
+            "boost_date": min(boost_dates) if boost_dates else None,
+            "lag_months": min(lag_months) if lag_months else None,
+            "ai_source":  ai_sources,
+            "n_packages": len(info["packages"]),
+            "packages":   info["packages"][:5],
         })
 
     n_repos_total   = len(final_repos)
@@ -261,6 +316,9 @@ def main():
         r["repo"]: {
             "ki_type":    r["ki_type"],
             "ki_year":    r["ki_year"],
+            "boost_date": r["boost_date"],
+            "lag_months": r["lag_months"],
+            "ai_source":  r["ai_source"],
             "n_packages": r["n_packages"],
         }
         for r in final_repos

@@ -27,21 +27,24 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.db_config import get_mongo_uri
 
-MONGO_URI = get_mongo_uri()
-DB_NAME  = "upstreamPackages"
-OUT_JSON = Path(__file__).parent / "core_analysis_results.json"
+import argparse as _argparse
+_p = _argparse.ArgumentParser(add_help=False)
+_p.add_argument("--mongo-db", default="upstreamPackages")
+_args, _ = _p.parse_known_args()
 
-# Suche ki_repo_mapping.json
-for _p in [
-    Path(__file__).parent / "ki_repo_mapping.json",
-    Path("/Users/lmpl/Desktop/Bachelorarbeit/Analyse/ki_repo_mapping.json"),
-    Path("/Users/lmpl/Desktop/Bachelorarbeit/ki_repo_mapping.json"),
-]:
-    if _p.exists():
-        KI_MAPPING_PATH = _p
-        break
-else:
-    raise FileNotFoundError("ki_repo_mapping.json nicht gefunden")
+MONGO_URI = get_mongo_uri()
+DB_NAME   = _args.mongo_db
+OUT_JSON  = Path(__file__).parent / "core_analysis_results.json"
+
+import sys as _sys2
+from pathlib import Path as _Path2
+_sys2.path.insert(0, str(_Path2(__file__).resolve().parents[1]))
+from common.paths import get_output_dir as _get_output_dir
+
+_OUT_DIR = _get_output_dir()
+KI_MAPPING_PATH = _OUT_DIR / "ki_repo_mapping.json"
+if not KI_MAPPING_PATH.exists():
+    raise FileNotFoundError(f"ki_repo_mapping.json nicht gefunden in {KI_MAPPING_PATH}")
 
 
 def ts():
@@ -216,8 +219,9 @@ def main():
     db.command("ping")
     print(f"[{ts()}] Verbunden.\n")
 
-    panel_repos    = db["depsProjectsPanel"]
-    panel_packages = db["depsPackagesPanel"]
+    from common.compat_v2 import get_panel_collection
+    panel_repos    = get_panel_collection(db)
+    panel_packages = db["depsPackagesPanel"]  # V1-only: dependentCount fehlt in V2
     results        = {}
 
     # ── Block 1: Commit- und Contributor-Kurven aus depsProjectsPanel ────────

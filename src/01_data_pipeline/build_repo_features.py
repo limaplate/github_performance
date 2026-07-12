@@ -41,8 +41,13 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.paths import get_output_dir
 
+import argparse as _argparse
+_p = _argparse.ArgumentParser(add_help=False)
+_p.add_argument("--mongo-db", default="upstreamPackages")
+_args, _ = _p.parse_known_args()
+
 MONGO_URI = get_mongo_uri()
-DB_NAME        = "upstreamPackages"
+DB_NAME   = _args.mongo_db
 OUT_DIR = get_output_dir()
 OUT_CSV        = OUT_DIR / "repo_features.csv"
 KI_MAPPING_PATH = OUT_DIR / "ki_repo_mapping.json"
@@ -120,8 +125,9 @@ db = client[DB_NAME]
 db.command("ping")
 print(f"[{ts()}] Verbunden.")
 
+from common.compat_v2 import get_panel_collection
 projects = db["depsProjects"]
-panel    = db["depsProjectsPanel"]
+panel    = get_panel_collection(db)
 
 # ── KI-Mapping laden ─────────────────────────────────────────────────────────
 with open(KI_MAPPING_PATH, encoding="utf-8") as f:

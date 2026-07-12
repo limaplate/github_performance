@@ -28,9 +28,14 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.paths import get_output_dir
 
+import argparse as _argparse
+_p = _argparse.ArgumentParser(add_help=False)
+_p.add_argument("--mongo-db", default="upstreamPackages")
+_args, _ = _p.parse_known_args()
+
 MONGO_URI = get_mongo_uri()
-DB_NAME = "upstreamPackages"
-OUT_DIR = get_output_dir()
+DB_NAME   = _args.mongo_db
+OUT_DIR   = get_output_dir()
 KI_MAPPING_PATH = OUT_DIR / "ki_repo_mapping.json"
 
 # ── Hilfsfunktionen ───────────────────────────────────────────────────────────
@@ -55,7 +60,8 @@ db = client[DB_NAME]
 db.command("ping")
 print(f"[{ts()}] Verbunden.")
 
-panel = db["depsProjectsPanel"]
+from common.compat_v2 import get_panel_collection
+panel = get_panel_collection(db)
 projects = db["depsProjects"]
 
 # ── KI-Mapping laden ─────────────────────────────────────────────────────────
@@ -427,15 +433,79 @@ plt.savefig(out, dpi=150, bbox_inches="tight")
 plt.close()
 print(f"[{ts()}]   Gespeichert: {out}")
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# FOLIE 21b — Non-AI Repos (exklusiv, normiert 24 Monate ab erstem Commit)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+print(f"\n[{ts()}] FOLIE 21b: Non-AI Aktivitaet (exklusiv)...")
+
+bucket_na_commits      = np.zeros(24, dtype=np.float64)
+bucket_na_contributors = np.zeros(24, dtype=np.float64)
+bucket_na_count        = np.zeros(24, dtype=np.int64)
+
+non_ai_earliest = {repo: date for repo, date in repo_first.items()
+                   if repo not in ai_set}
+print(f"[{ts()}]   Non-AI Repos: {len(non_ai_earliest):,}")
+
+cursor = panel.find(
+    {"_id.nameWithOwner": {"$nin": list(ai_set)}},
+    {"_id": 1, "commits": 1, "contributors": 1}
+)
+for doc in cursor:
+    repo       = doc["_id"]["nameWithOwner"]
+    first_date = non_ai_earliest.get(repo)
+    if first_date is None:
+        continue
+    try:
+        d_doc   = doc["_id"]["date"]
+        d_doc   = d_doc if isinstance(d_doc, datetime) else datetime.fromisoformat(str(d_doc))
+        d_first = first_date if isinstance(first_date, datetime) else datetime.fromisoformat(str(first_date))
+        rel     = (d_doc.year - d_first.year) * 12 + (d_doc.month - d_first.month)
+    except Exception:
+        continue
+    if 0 <= rel < 24:
+        bucket_na_commits[rel]      += doc.get("commits", 0) or 0
+        bucket_na_contributors[rel] += doc.get("contributors", 0) or 0
+        bucket_na_count[rel]        += 1
+cursor.close()
+print(f"[{ts()}]   Non-AI Buckets. Max count: {bucket_na_count.max():,}")
+
+with np.errstate(invalid="ignore"):
+    avg_na_commits      = np.where(bucket_na_count > 0, bucket_na_commits      / bucket_na_count, 0)
+    avg_na_contributors = np.where(bucket_na_count > 0, bucket_na_contributors / bucket_na_count, 0)
+
+fig, ax1 = plt.subplots(figsize=(10, 5))
+months = np.arange(24)
+ax1.bar(months, avg_na_commits, color="#4C72B0", alpha=0.85, label="Ø Commits", width=0.7)
+ax1.set_ylabel("Ø Commits pro Monat", color="#4C72B0", fontsize=10)
+ax1.tick_params(axis="y", labelcolor="#4C72B0")
+ax2 = ax1.twinx()
+ax2.plot(months, avg_na_contributors, color="#DD8452", linewidth=2.5,
+         marker="o", markersize=4, label="Ø Contributors")
+ax2.set_ylabel("Ø Contributors pro Monat", color="#DD8452", fontsize=10)
+ax2.tick_params(axis="y", labelcolor="#DD8452")
+ax1.set_xlabel("Relativer Monat ab erstem Commit (Monat 0 = Projektstart)", fontsize=10)
+ax1.set_title("Aktivität Non-AI Repos – Commits & Contributors\n"
+              "(normiert auf 24 Monate ab Projektstart, exkl. alle KI-Repos)",
+              fontsize=12, fontweight="bold", pad=10)
+ax1.spines[["top"]].set_visible(False)
+ax1.xaxis.set_major_locator(mticker.MultipleLocator(2))
+ax1.set_xticks(range(0, 24, 2))
+lines1, labels1 = ax1.get_legend_handles_labels()
+lines2, labels2 = ax2.get_legend_handles_labels()
+ax1.legend(lines1 + lines2, labels1 + labels2, loc="upper right", framealpha=0.8)
+plt.tight_layout()
+out = OUT_DIR / "viz_21b_activity_nonai_only.png"
+plt.savefig(out, dpi=150, bbox_inches="tight")
+plt.close()
+print(f"[{ts()}]   Gespeichert: {out}")
+
 # ── Fertig ────────────────────────────────────────────────────────────────────
 client.close()
-print(f"\n[{ts()}] Alle 4 Visualisierungen fertig.")
+print(f"\n[{ts()}] Alle Visualisierungen fertig.")
 print("  viz_21_activity_all_repos.png")
+print("  viz_21b_activity_nonai_only.png")
 print("  viz_23_activity_boosted_prepost.png")
 print("  viz_25_activity_born_first24.png")
 print("  viz_27_orga_vs_privat.png")
 print("  viz_29_stars_distribution.png")
-
-# === NEUVERSION viz_29 ===
-if __name__ == "__rerun__":  # wird nicht ausgefuehrt, nur als Referenz
-    pass

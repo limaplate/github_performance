@@ -51,6 +51,15 @@ class _CompatCollection:
     def estimated_document_count(self):
         return self._col.estimated_document_count()
 
+    def find(self, filter: dict = None, projection: dict = None, **kwargs):
+        """Emuliert Collection.find() als Aggregation-Cursor."""
+        stages = list(self._prefix)
+        if filter:
+            stages.append({"$match": filter})
+        if projection:
+            stages.append({"$project": projection})
+        return self._col.aggregate(stages, allowDiskUse=True, **kwargs)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. DEPS: depsPackagesDependencies (V1) <-> depsVersions (V2)
@@ -239,7 +248,3 @@ def setup_v2_views(db: Database):
     else:
         print("[compat_v2] V2-Datenbank — Wrapper-Modus aktiv (kein Schreibzugriff noetig).")
 
-def count_documents(self, filter: dict = None, **kwargs):
-    pipeline = self._prefix + ([{"$match": filter}] if filter else []) + [{"$count": "n"}]
-    rows = list(self._col.aggregate(pipeline, allowDiskUse=True))
-    return rows[0]["n"] if rows else 0
