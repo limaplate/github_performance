@@ -1,17 +1,14 @@
 # Generierte Outputs — werden lokal erzeugt, nicht versioniert
+outputs/*
+!outputs/.keep
 data/processed/*
 !data/processed/.keep
-output/*
-!output/.keep
-Outputs/*
-!Outputs/.keep
 
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
 venv/
 .env
 

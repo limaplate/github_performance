@@ -2,7 +2,7 @@
 paths.py — Zentrale Pfad-Konfiguration fuer alle Analyse-Skripte.
 
 Stellt sicher, dass ALLE Outputs (Plots, CSVs, Logs) unabhaengig davon,
-von wo ein Skript gestartet wird, im selben zentralen output/-Ordner
+von wo ein Skript gestartet wird, im selben zentralen outputs/-Ordner
 im Repo-Root landen.
 
 Verwendung in jedem Analyse-Skript:
@@ -18,7 +18,7 @@ def get_repo_root() -> Path:
 
 
 def get_output_dir(subfolder=None) -> Path:
-    out_dir = get_repo_root() / "output"
+    out_dir = get_repo_root() / "outputs"
     if subfolder:
         out_dir = out_dir / subfolder
     out_dir.mkdir(parents=True, exist_ok=True)
