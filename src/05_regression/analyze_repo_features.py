@@ -6,9 +6,8 @@ from common.paths import get_output_dir
 
 import argparse as _argparse
 _p = _argparse.ArgumentParser(add_help=False)
-_p.add_argument("--mongo-db", default="upstreamPackages")
 _args, _ = _p.parse_known_args()
-DB_NAME = _args.mongo_db
+DB_NAME = "upstreamPackagesV2"
 MONGO_URI = get_mongo_uri()
 
 import numpy as np

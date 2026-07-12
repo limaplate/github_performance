@@ -31,11 +31,10 @@ from common.paths import get_output_dir
 
 import argparse as _argparse
 _p = _argparse.ArgumentParser(add_help=False)
-_p.add_argument("--mongo-db", default="upstreamPackages")
 _args, _ = _p.parse_known_args()
 
 MONGO_URI = get_mongo_uri()
-DB_NAME   = _args.mongo_db
+DB_NAME = "upstreamPackagesV2"
 OUT_DIR   = get_output_dir()
 OUT_JSON  = OUT_DIR / "descriptive_stats_results.json"
 KI_MAPPING_PATH = OUT_DIR / "ki_repo_mapping.json"
@@ -129,8 +128,8 @@ def main():
         for i in range(0, len(repo_list), BATCH):
             batch = repo_list[i:i+BATCH]
             docs  = projects_col.find(
-                {"name": {"$in": [r.lower() for r in batch]}},
-                {"name": 1, "ownerData.type": 1}
+                {"_id.name": {"$in": batch}},
+                {"ownerData.type": 1}
             )
             for doc in docs:
                 owner_type = doc.get("ownerData", {}).get("type", "")
@@ -149,9 +148,9 @@ def main():
     ]:
         repo_list = list(repo_set)
         for i in range(0, len(repo_list), BATCH):
-            batch = [r.lower() for r in repo_list[i:i+BATCH]]
+            batch = repo_list[i:i+BATCH]
             docs  = projects_col.find(
-                {"name": {"$in": batch}},
+                {"_id.name": {"$in": batch}},
                 {"repoData.stars": 1, "stars": 1}
             )
             for doc in docs:
@@ -180,9 +179,9 @@ def main():
     for ki_type, repo_set in [("native", native_repos), ("boosted", boosted_repos)]:
         repo_list = list(repo_set)
         for i in range(0, len(repo_list), BATCH):
-            batch = [r.lower() for r in repo_list[i:i+BATCH]]
+            batch = repo_list[i:i+BATCH]
             docs  = projects_col.find(
-                {"name": {"$in": batch}},
+                {"_id.name": {"$in": batch}},
                 {"repoData.license": 1, "license": 1}
             )
             for doc in docs:

@@ -33,11 +33,10 @@ from common.paths import get_output_dir as _get_output_dir
 
 import argparse as _argparse
 _p = _argparse.ArgumentParser(add_help=False)
-_p.add_argument("--mongo-db", default="upstreamPackages")
 _args, _ = _p.parse_known_args()
 
 MONGO_URI = get_mongo_uri()
-DB_NAME   = _args.mongo_db
+DB_NAME = "upstreamPackagesV2"
 _OUT_DIR = Path(_get_output_dir())
 OUT_JSON  = _OUT_DIR / "event_study_results.json"
 KI_MAPPING_PATH = _OUT_DIR / "ki_repo_mapping.json"

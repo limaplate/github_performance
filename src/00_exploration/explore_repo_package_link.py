@@ -22,12 +22,11 @@ _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.db_config import get_mongo_uri
 import argparse as _argparse
 _p = _argparse.ArgumentParser(add_help=False)
-_p.add_argument("--mongo-db", default="upstreamPackages")
 _args, _ = _p.parse_known_args()
 from common.paths import get_output_dir, get_data_dir
 
 MONGO_URI = get_mongo_uri()
-DB_NAME = _args.mongo_db
+DB_NAME = "upstreamPackagesV2"
 OUT_JSON = Path(get_output_dir()) / "explore_repo_package_link_results.json"
 
 # KI-Pakete aus letztem Run (für Frage 4)

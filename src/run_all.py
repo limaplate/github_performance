@@ -28,7 +28,6 @@ _sys.path.insert(0, str(_Path(__file__).resolve().parent))
 from common.paths import get_output_dir
 
 _p = _argparse.ArgumentParser(add_help=False)
-_p.add_argument("--mongo-db",  default="upstreamPackages")
 _p.add_argument("--mongo-uri", default=None)
 _args, _extra = _p.parse_known_args()
 

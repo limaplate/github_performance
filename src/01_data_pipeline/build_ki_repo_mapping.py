@@ -30,11 +30,10 @@ from common.paths import get_output_dir
 
 import argparse as _argparse
 _p = _argparse.ArgumentParser(add_help=False)
-_p.add_argument("--mongo-db", default="upstreamPackages")
 _args, _ = _p.parse_known_args()
 
 MONGO_URI = get_mongo_uri()
-DB_NAME   = _args.mongo_db
+DB_NAME = "upstreamPackagesV2"
 OUT_JSON  = Path(get_output_dir()) / "ki_repo_mapping.json"
 
 # Signal-A Regex (High-Confidence Keywords)
