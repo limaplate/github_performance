@@ -34,6 +34,7 @@ import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.db_config import get_mongo_uri
+from common.compat_v2 import get_panel_collection
 import argparse as _argparse
 _p = _argparse.ArgumentParser(add_help=False)
 _p.add_argument("--mongo-db", default="upstreamPackages")
@@ -56,7 +57,7 @@ def main():
     db.command("ping")
     print(f"[{ts()}] Verbunden.\n")
 
-    panel   = db["depsPackagesPanel"]
+    panel   = get_panel_collection(db)
     results = {}
 
     # ── Block 1: Grundzahlen ─────────────────────────────────────────────────
