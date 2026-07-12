@@ -256,10 +256,12 @@ try:
     db_mg.command("ping")
     print("  MongoDB verbunden — lade aktuelle Stars...")
     groups_db = {"non_ai": [], "ai_native": [], "ai_boosted": []}
-    cursor = db_mg["depsProjects"].find({}, {"_id": 1, "repoData.stars": 1})
+    cursor = db_mg["depsProjects"].find({}, {"_id": 1, "repoData.stars": 1, "stars": 1})
     for doc in cursor:
         repo  = doc["_id"].get("name", "")
         stars = (doc.get("repoData") or {}).get("stars")
+        if stars is None:
+            stars = doc.get("stars")
         if stars is None or stars < 0:
             continue
         if repo in native_set:
