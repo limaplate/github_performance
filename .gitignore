@@ -1,0 +1,19 @@
+# Generierte Outputs — werden lokal erzeugt, nicht versioniert
+data/processed/*
+!data/processed/.keep
+output/*
+!output/.keep
+Outputs/*
+!Outputs/.keep
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.env
+
+# macOS
+.DS_Store

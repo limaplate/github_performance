@@ -132,7 +132,8 @@ panel    = get_panel_collection(db)
 # ── KI-Mapping laden ─────────────────────────────────────────────────────────
 with open(KI_MAPPING_PATH, encoding="utf-8") as f:
     ki_data = json.load(f)
-ki_mapping  = ki_data.get("repo_mapping", {})
+ki_mapping       = ki_data.get("repo_mapping", {})
+ki_mapping_lower = {k.lower(): v for k, v in ki_mapping.items()}
 native_set  = {r for r, v in ki_mapping.items() if v["ki_type"] == "native"}
 boosted_set = {r for r, v in ki_mapping.items() if v["ki_type"] == "boosted"}
 ai_set      = set(ki_mapping.keys())
@@ -149,7 +150,8 @@ cursor = panel.aggregate([
         "commits_list":      {"$push": "$commits"},
         "contributors_list": {"$push": "$contributors"},
         "commits_sum":       {"$sum": {"$ifNull": ["$commits", 0]}},
-        "n_snapshots":       {"$sum": 1}
+        "n_snapshots":       {"$sum": 1},
+        "first_commit_date": {"$min": "$_id.date"}
     }}
 ], allowDiskUse=True)
 
@@ -162,11 +164,12 @@ def _median(lst):
     return s[n // 2] if n % 2 else (s[n//2 - 1] + s[n//2]) / 2
 
 for doc in cursor:
-    panel_stats[doc["_id"]] = {
+    panel_stats[doc["_id"].lower()] = {
         "commits_median":      _median(doc["commits_list"]),
         "contributors_median": _median(doc["contributors_list"]),
         "commits_total":       doc["commits_sum"],
         "n_snapshots":         doc["n_snapshots"],
+        "first_commit_date":   doc.get("first_commit_date"),
     }
 print(f"[{ts()}] Panel-Stats: {len(panel_stats):,} Repos")
 
@@ -189,12 +192,14 @@ cursor2 = projects.find(
         "repoData.stars":      1,
         "repoData.forks":      1,
         "repoData.license":    1,
-        "repoData.created_at": 1,
-        "repoData.createdAt":  1,
-        "repoData.pushedAt":   1,
+        "repoData.created_at": 1,  # V1
+        "repoData.createdAt":  1,  # V1 alt
+        "repoData.pushedAt":   1,  # V1
         "ownerData.type":      1,
         "stars":               1,
         "license":             1,
+        "forks":               1,  # V2 top-level
+        "exportDate":          1,  # V2 fallback fuer age (nur grob)
     }
 )
 
@@ -208,15 +213,12 @@ for doc in cursor2:
     ki_type = "non_ai"
     native_i  = 0
     boosted_i = 0
-    for r in [repo_lower] + [r for r in ki_mapping if r.lower() == repo_lower]:
-        if r in native_set:
-            ki_type  = "native"
-            native_i = 1
-            break
-        if r in boosted_set:
-            ki_type   = "boosted"
-            boosted_i = 1
-            break
+    entry = ki_mapping_lower.get(repo_lower)
+    if entry:
+        if entry["ki_type"] == "native":
+            ki_type, native_i = "native", 1
+        elif entry["ki_type"] == "boosted":
+            ki_type, boosted_i = "boosted", 1
 
     rd = doc.get("repoData") or {}
 
@@ -226,12 +228,16 @@ for doc in cursor2:
         stars = doc.get("stars")
     stars = int(stars) if isinstance(stars, (int, float)) else None
 
-    # Forks
+    # Forks — V1: repoData.forks, V2: top-level forks
     forks = rd.get("forks")
+    if forks is None:
+        forks = doc.get("forks")
     forks = int(forks) if isinstance(forks, (int, float)) else None
 
-    # Age
+    # Age — V1: repoData.created_at; V2: Fallback auf ersten Commit-Monat aus Panel
     created = rd.get("created_at") or rd.get("createdAt")
+    if created is None:
+        created = (panel_stats.get(repo_lower) or {}).get("first_commit_date")
     age = age_months(created)
 
     # Org

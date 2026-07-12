@@ -29,22 +29,17 @@ import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.db_config import get_mongo_uri
+from common.paths import get_output_dir as _get_output_dir
 
 import argparse as _argparse
 _p = _argparse.ArgumentParser(add_help=False)
 _p.add_argument("--mongo-db", default="upstreamPackages")
 _args, _ = _p.parse_known_args()
 
-import sys as _sys2
-from pathlib import Path as _Path2
-_sys2.path.insert(0, str(_Path2(__file__).resolve().parents[1]))
-from common.paths import get_output_dir as _get_output_dir
-
 MONGO_URI = get_mongo_uri()
 DB_NAME   = _args.mongo_db
-OUT_JSON  = Path(__file__).parent / "event_study_results.json"
-
-_OUT_DIR = _get_output_dir()
+_OUT_DIR = Path(_get_output_dir())
+OUT_JSON  = _OUT_DIR / "event_study_results.json"
 KI_MAPPING_PATH = _OUT_DIR / "ki_repo_mapping.json"
 if not KI_MAPPING_PATH.exists():
     raise FileNotFoundError(f"ki_repo_mapping.json nicht gefunden in {KI_MAPPING_PATH}")
@@ -86,7 +81,7 @@ def date_to_ym(dt):
     """Konvertiert datetime zu (year, month) Tupel."""
     if isinstance(dt, datetime):
         return (dt.year, dt.month)
-    if isinstance(dt, int):
+    if isinstance(dt, (int, float)):
         return date_to_ym(datetime.utcfromtimestamp(dt))
     return None
 

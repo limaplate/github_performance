@@ -21,10 +21,11 @@ import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.db_config import get_mongo_uri
+from common.paths import get_output_dir
 
 MONGO_URI = get_mongo_uri()
 DB_NAME = "upstreamPackages"
-OUT_JSON = Path(__file__).parent / "explore_deps_versions_results.json"
+OUT_JSON = Path(get_output_dir()) / "explore_deps_versions_results.json"
 
 # KI-Libraries fuer Matching (Tier 1+2+3 kombiniert)
 AI_LIBS = {

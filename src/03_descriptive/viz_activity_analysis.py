@@ -333,7 +333,7 @@ print(f"\n[{ts()}] FOLIE 27+29: Orga vs. Privat & Stars...")
 print(f"[{ts()}]   Lade depsProjects...")
 cursor = projects.find(
     {},
-    {"_id": 1, "repoData.stars": 1, "ownerData.type": 1}
+    {"_id": 1, "repoData.stars": 1, "stars": 1, "ownerData.type": 1}
 )
 
 groups = {"non_ai": {"org": 0, "user": 0, "stars": []},
@@ -343,7 +343,7 @@ groups = {"non_ai": {"org": 0, "user": 0, "stars": []},
 for doc in cursor:
     repo = doc["_id"].get("name", "")
     owner_type = (doc.get("ownerData") or {}).get("type", "").lower()
-    stars = (doc.get("repoData") or {}).get("stars") or 0
+    stars = (doc.get("repoData") or {}).get("stars") or doc.get("stars") or 0
 
     if repo in native_set:
         grp = "ai_native"

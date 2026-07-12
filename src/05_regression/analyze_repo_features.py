@@ -210,7 +210,7 @@ for nm in ["native_i", "boosted_i", "log_age", "perm_i"]:
     print(f"  {nm:<28}  {b1:>+10.4f}  {b2:>+10.4f}  {b2-b1:>+8.4f}")
 
 # ── Ergebnisse speichern ─────────────────────────────────────────────────────
-with open(OUT_DIR / "ols_results_v2.txt", "w") as fout:
+with open(OUT_DIR / "ols_results.txt", "w") as fout:
     fout.write("=== MODELL 1: HC3 ROBUSTE SE ===\n")
     fout.write(str(model_hc3.summary()))
     fout.write("\n\n=== INTERPRETATION HC3 ===\n")

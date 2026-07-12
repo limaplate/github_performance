@@ -20,13 +20,14 @@ import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.db_config import get_mongo_uri
+from common.paths import get_output_dir, get_data_dir
 
 MONGO_URI = get_mongo_uri()
 DB_NAME = "upstreamPackages"
-OUT_JSON = Path(__file__).parent / "explore_repo_package_link_results.json"
+OUT_JSON = Path(get_output_dir()) / "explore_repo_package_link_results.json"
 
 # KI-Pakete aus letztem Run (für Frage 4)
-RESULTS_JSON = Path("C:/Users/ejs43zd/Downloads/count_signals_v2_results.json")
+RESULTS_JSON = Path(get_output_dir()) / "count_signals_results.json"
 
 
 def ts():
@@ -189,7 +190,7 @@ def main():
         # Wir nutzen union_a_or_b als Referenz und schauen wie viele davon Repo-Link haben
 
         # Packages mit Signal A UND Repo-Link
-        from count_signals_v2 import HIGH_CONF_REGEX
+        from count_signals import HIGH_CONF_REGEX
         n_ki_a_with_link = packages.count_documents({
             "_id.system": "PYPI",
             "packageInformation.description": {"$regex": HIGH_CONF_REGEX, "$options": "i"},

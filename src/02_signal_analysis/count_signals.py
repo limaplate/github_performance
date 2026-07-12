@@ -1,5 +1,5 @@
 """
-count_signals_v2.py — AI-Klassifikation des PyPI/GitHub-Oekosystems
+count_signals.py — AI-Klassifikation des PyPI/GitHub-Oekosystems
 ====================================================================
 
 Verwendeter Datensatz: upstream_packages (Ende 2024)
@@ -140,8 +140,8 @@ VERBINDUNG PAKET <-> PROJEKT:
     verknuepftes GitHub-Repo in der DB (PyPI-only Pakete).
 
 AUSGABE:
-    count_signals_v2_results.txt   — menschenlesbar, jede Query mit Erklaerung
-    count_signals_v2_results.json  — maschinenlesbar, alle Zahlen
+    count_signals_results.txt   — menschenlesbar, jede Query mit Erklaerung
+    count_signals_results.json  — maschinenlesbar, alle Zahlen
     viz_01_ai_share.png            — Balken: A, B, A∪B, Non-AI nebeneinander
     viz_02_tier_breakdown.png      — Balken: Signal-B-Pakete je Library-Tier
     viz_03_top_keywords.png        — Balken: Top-20 Keywords in descriptions
@@ -189,8 +189,8 @@ DB_NAME = _args.mongo_db
 MONGO_URI = get_mongo_uri()
 
 OUT_DIR   = Path(get_output_dir())
-OUT_TXT   = OUT_DIR / "count_signals_v2_results.txt"
-OUT_JSON  = OUT_DIR / "count_signals_v2_results.json"
+OUT_TXT   = OUT_DIR / "count_signals_results.txt"
+OUT_JSON  = OUT_DIR / "count_signals_results.json"
 
 
 # =============================================================================
@@ -912,7 +912,7 @@ def main():
     log = DualLog(OUT_TXT)
     results = {}
 
-    log.write(f"count_signals_v2.py — Start: {datetime.now().isoformat(timespec='seconds')}")
+    log.write(f"count_signals.py — Start: {datetime.now().isoformat(timespec='seconds')}")
     log.write(f"DB: {DB_NAME}")
     log.write(f"Tier-1 ({len(TIER1_DILHARA)} Libs): {TIER1_DILHARA}")
     log.write(f"Tier-2 ({len(TIER2_FOUNDATION)} Libs): {TIER2_FOUNDATION}")
@@ -990,7 +990,8 @@ def main():
             "_id.system": "PYPI",
             "$or": [
                 {"packageInformation.description": {"$regex": HIGH_CONF_REGEX, "$options": "i"}},
-                {"packageInformation.dependencies.name": {"$in": ALL_AI_LIBS}}
+                {"packageInformation.dependencies.name": {"$in": ALL_AI_LIBS}},            # V1
+                {"dependencyInformation.dependencies.package.name": {"$in": ALL_AI_LIBS}}  # V2
             ]
         },
         {"packageInformation.links.repo": 1, "links.repo": 1}
@@ -1256,7 +1257,8 @@ def main():
             b_t2 += 1
         if libs & tier3_set:
             b_t3 += 1
-        if (libs & tier1_set) and (libs & tier2_set):
+        tiers_hit = sum([bool(libs & tier1_set), bool(libs & tier2_set), bool(libs & tier3_set)])
+        if tiers_hit >= 2:
             b_t12 += 1
         for lib in libs:
             lib_counts[lib] = lib_counts.get(lib, 0) + 1

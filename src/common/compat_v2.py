@@ -224,7 +224,7 @@ def get_topics_collection(db: Database):
     V2: aus depsProjects.repoData.topics       (ein Dokument pro Repo)
 
     Rückgabe: _CompatCollection mit Schema { _id: {nameWithOwner}, topics: [...] }
-    Verwendung in count_signals_v2.py:
+    Verwendung in count_signals.py:
         from common.compat_v2 import get_topics_collection
         topics_col = get_topics_collection(db)  # statt db["depsProjectsPanel"]
     """

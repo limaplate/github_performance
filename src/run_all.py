@@ -4,7 +4,7 @@ run_all.py — Alle Analyse-Skripte sequenziell ausfuehren
 Reihenfolge:
   1. build_ki_repo_mapping.py     KI-Klassifikation -> ki_repo_mapping.json
   2. build_repo_features.py       repo_features.csv bauen
-  3. count_signals.py             Signal A/B zaehlen + Kennzahlen 5/7
+  3. count_signals.py             Signal A/B zaehlen -> viz_01-viz_06 (laeuft lang)
   4. panel_analysis.py            Commit/Contributor-Wachstum (Panel)
   5. descriptive_stats.py         Stars/Lizenz/Org Querschnitt
   6. viz_activity_analysis.py     Aktivitaets-Plots (alle Gruppen)
@@ -38,7 +38,7 @@ LOG_FILE = OUT_DIR / "run_all_log.txt"
 SCRIPTS = [
     ("01_data_pipeline/build_ki_repo_mapping.py",  "KI-Klassifikation -> ki_repo_mapping.json"),
     ("01_data_pipeline/build_repo_features.py",    "repo_features.csv bauen"),
-    ("02_signal_analysis/count_signals.py",        "Signal A/B zaehlen + Kennzahlen 5/7"),
+    ("02_signal_analysis/count_signals.py",        "Signal A/B zaehlen -> viz_01 bis viz_06 + count_signals_results.json"),
     ("03_descriptive/panel_analysis.py",           "Commit/Contributor-Wachstum (Panel)"),
     ("03_descriptive/descriptive_stats.py",        "Stars/Lizenz/Org Querschnitt"),
     ("03_descriptive/viz_activity_analysis.py",    "Aktivitaets-Plots (alle Gruppen inkl. Non-AI)"),

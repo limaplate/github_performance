@@ -26,6 +26,7 @@ import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.db_config import get_mongo_uri
+from common.paths import get_output_dir
 
 import argparse as _argparse
 _p = _argparse.ArgumentParser(add_help=False)
@@ -34,7 +35,7 @@ _args, _ = _p.parse_known_args()
 
 MONGO_URI = get_mongo_uri()
 DB_NAME   = _args.mongo_db
-OUT_JSON  = Path(__file__).parent / "ki_repo_mapping.json"
+OUT_JSON  = Path(get_output_dir()) / "ki_repo_mapping.json"
 
 # Signal-A Regex (High-Confidence Keywords)
 HIGH_CONF_REGEX = (
@@ -91,6 +92,8 @@ def main():
     # ── Block 1: Alle KI-Packages mit Repo-Link ──────────────────────────────
     print(f"[{ts()}] Block 1: KI-Packages mit GitHub-Repo-Link laden...")
 
+    # V1: packageInformation.dependencies[].{name, depth}
+    # V2: dependencyInformation.dependencies[].{package.name, distance}
     t0 = time.time()
     ki_with_repo = list(packages.find(
         {
@@ -98,7 +101,8 @@ def main():
             "packageInformation.projects": {"$exists": True, "$not": {"$size": 0}},
             "$or": [
                 {"packageInformation.description": {"$regex": HIGH_CONF_REGEX, "$options": "i"}},
-                {"packageInformation.dependencies.name": {"$in": list(AI_LIBS)}}
+                {"packageInformation.dependencies.name": {"$in": list(AI_LIBS)}},        # V1
+                {"dependencyInformation.dependencies.package.name": {"$in": list(AI_LIBS)}}  # V2
             ]
         },
         {
@@ -106,7 +110,8 @@ def main():
             "packageInformation.projects": 1,
             "packageInformation.createdAt": 1,
             "packageInformation.description": 1,
-            "packageInformation.dependencies": 1,
+            "packageInformation.dependencies": 1,          # V1
+            "dependencyInformation.dependencies": 1,       # V2
         }
     ))
     print(f"  KI-Packages mit Repo-Link: {len(ki_with_repo):>8,}  ({time.time()-t0:.1f}s)")
@@ -120,12 +125,20 @@ def main():
     def _get_ai_source(doc):
         pi   = doc.get("packageInformation") or {}
         desc = pi.get("description") or ""
-        deps = pi.get("dependencies") or []
         has_a = bool(_high_conf_re.search(desc))
+        # V1: packageInformation.dependencies[].{name, depth}
+        deps_v1 = pi.get("dependencies") or []
         has_b = any(
             d.get("name") in _ai_libs_set and d.get("depth") == 1
-            for d in deps
+            for d in deps_v1
         )
+        if not has_b:
+            # V2: dependencyInformation.dependencies[].{package.name, distance}
+            deps_v2 = (doc.get("dependencyInformation") or {}).get("dependencies") or []
+            has_b = any(
+                (d.get("package") or {}).get("name") in _ai_libs_set and d.get("distance") == 1
+                for d in deps_v2
+            )
         src = []
         if has_a:
             src.append("a")

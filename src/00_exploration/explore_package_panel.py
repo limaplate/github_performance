@@ -34,10 +34,11 @@ import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.db_config import get_mongo_uri
+from common.paths import get_output_dir
 
 MONGO_URI = get_mongo_uri()
 DB_NAME  = "upstreamPackages"
-OUT_JSON = Path(__file__).parent / "explore_package_panel_results.json"
+OUT_JSON = Path(get_output_dir()) / "explore_package_panel_results.json"
 
 
 def ts():
@@ -170,7 +171,7 @@ def main():
     # ── Block 5: Overlap mit KI-Packages ─────────────────────────────────────
     print(f"\n[{ts()}] Block 5: Overlap mit KI-Repo-Mapping...")
 
-    KI_MAPPING = Path(__file__).parent / "ki_repo_mapping.json"
+    KI_MAPPING = Path(get_output_dir()) / "ki_repo_mapping.json"
     if KI_MAPPING.exists():
         with open(KI_MAPPING, encoding="utf-8") as f:
             ki_data = json.load(f)
