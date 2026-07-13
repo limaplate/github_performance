@@ -107,10 +107,11 @@ def main():
     db.command("ping")
     print(f"[{ts()}] Verbunden.\n")
 
-    from common.compat_v2 import get_deps_collection, get_panel_collection
-    deps_col   = get_deps_collection(db)
-    panel_col  = get_panel_collection(db)
-    pkg_col    = db["depsPackages"]
+    from common.compat_v2 import get_panel_collection
+    panel_col    = get_panel_collection(db)
+    pkg_col      = db["depsPackages"]
+    # Block 1 braucht raw depsVersions (kein Wrapper-Overhead, filter auf _id.name)
+    deps_raw_col = db["depsVersions"]
 
     results = {}
 
@@ -142,30 +143,41 @@ def main():
     all_boosted_pkgs = list({p for pkgs in repo_to_pkgs.values() for p in pkgs})
     print(f"  Lade Versions-Daten fuer {len(all_boosted_pkgs):,} Packages...")
 
-    # Aggregation: pro Package -> erste Version mit KI-Dep
-    ki_first_ts = list(deps_col.aggregate([
+    # Aggregation direkt auf depsVersions (V2-Schema, kein Wrapper)
+    # V2: upstreampublishedat (ISO-String), dependencyInformation.dependencies[].package.name + .distance
+    ki_first_ts = list(deps_raw_col.aggregate([
         {"$match": {
             "_id.name": {"$in": all_boosted_pkgs},
-            "createdAt": {"$exists": True, "$ne": None},
-            "dependencies": {"$elemMatch": {
-                "name": {"$in": list(AI_LIBS)},
-                "depth": 1
+            "dependenciesprocessed": True,
+            "dependencyerror": {"$ne": True},
+            "upstreampublishedat": {"$exists": True, "$ne": None},
+            "dependencyInformation.dependencies": {"$elemMatch": {
+                "package.name": {"$in": list(AI_LIBS)},
+                "distance": 1
             }}
         }},
-        {"$sort": {"createdAt": 1}},
+        {"$addFields": {"_pub_ts": {"$toLong": {"$divide": [
+            {"$toLong": {"$toDate": "$upstreampublishedat"}}, 1000
+        ]}}}},
+        {"$sort": {"_pub_ts": 1}},
         {"$group": {
             "_id": "$_id.name",
-            "first_ki_ts": {"$first": "$createdAt"},
-            "first_ts":    {"$first": "$createdAt"}
-        }},
-        # Erste Version overall
+            "first_ki_ts": {"$first": "$_pub_ts"}
+        }}
     ], allowDiskUse=True))
 
-    # Auch erste Version overall (nicht nur KI-Versionen)
-    first_ts_all = list(deps_col.aggregate([
-        {"$match": {"_id.name": {"$in": all_boosted_pkgs}, "createdAt": {"$exists": True}}},
-        {"$sort": {"createdAt": 1}},
-        {"$group": {"_id": "$_id.name", "first_ts": {"$first": "$createdAt"}}}
+    # Erste Version overall (nicht nur KI-Versionen)
+    first_ts_all = list(deps_raw_col.aggregate([
+        {"$match": {
+            "_id.name": {"$in": all_boosted_pkgs},
+            "dependenciesprocessed": True,
+            "upstreampublishedat": {"$exists": True, "$ne": None}
+        }},
+        {"$addFields": {"_pub_ts": {"$toLong": {"$divide": [
+            {"$toLong": {"$toDate": "$upstreampublishedat"}}, 1000
+        ]}}}},
+        {"$sort": {"_pub_ts": 1}},
+        {"$group": {"_id": "$_id.name", "first_ts": {"$first": "$_pub_ts"}}}
     ], allowDiskUse=True))
     first_ts_map = {d["_id"]: d["first_ts"] for d in first_ts_all}
 
@@ -406,8 +418,8 @@ def _draw_event_plots(curves_norm, curves_raw, t_range, n_boosted, n_native, out
     fig, axes15 = plt.subplots(1, 2, figsize=(16, 6))
     fig.patch.set_facecolor("white")
     fig.suptitle(
-        "Event Study: Aktivitaet von AI-boosted Repos rund um die KI-Adoption\n"
-        "Normiert auf t=−1 (Monat vor erster KI-Abhaengigkeit) | Median der per-Repo-Ratios | n=1,218 Repos",
+        f"Event Study: Aktivitaet von AI-boosted Repos rund um die KI-Adoption\n"
+        f"Normiert auf t=−1 (Monat vor erster KI-Abhaengigkeit) | Median der per-Repo-Ratios | n={n_boosted:,} Repos",
         fontsize=12, fontweight="bold", color=COLOR_ANNO
     )
 
@@ -431,9 +443,9 @@ def _draw_event_plots(curves_norm, curves_raw, t_range, n_boosted, n_native, out
         ax.legend(loc="upper left", fontsize=9, framealpha=0.9)
 
     insight15 = (
-        "Lesehilfe: Jeder Datenpunkt zeigt den Median der Verhaeltnisse (Aktivitaet bei t) / (Aktivitaet bei t=−1) "
-        "ueber alle 1,218 AI-boosted Repos. Schattierung = IQR (25.–75. Perzentil). "
-        "Werte > 1.0 bedeuten mehr Aktivitaet als im Monat vor der KI-Adoption."
+        f"Lesehilfe: Jeder Datenpunkt zeigt den Median der Verhaeltnisse (Aktivitaet bei t) / (Aktivitaet bei t=−1) "
+        f"ueber alle {n_boosted:,} AI-boosted Repos. Schattierung = IQR (25.–75. Perzentil). "
+        f"Werte > 1.0 bedeuten mehr Aktivitaet als im Monat vor der KI-Adoption."
     )
     fig.text(0.5, -0.03, insight15, fontsize=8.5, ha="center", va="bottom",
              color="#444444", style="italic",
@@ -449,8 +461,8 @@ def _draw_event_plots(curves_norm, curves_raw, t_range, n_boosted, n_native, out
     fig, axes16 = plt.subplots(1, 2, figsize=(16, 6))
     fig.patch.set_facecolor("white")
     fig.suptitle(
-        "Wachstumskurve von AI-native Repos ab Gruendungsmonat (t=0)\n"
-        "Normiert auf t=0 = 1.0 | Median der per-Repo-Ratios | n=4,124 Repos",
+        f"Wachstumskurve von AI-native Repos ab Gruendungsmonat (t=0)\n"
+        f"Normiert auf t=0 = 1.0 | Median der per-Repo-Ratios | n={n_native:,} Repos",
         fontsize=12, fontweight="bold", color=COLOR_ANNO
     )
 

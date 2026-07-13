@@ -248,17 +248,17 @@ try:
     with open(ki_mapping_path, encoding="utf-8") as f:
         ki_data = json.load(f)
     ki_mapping  = ki_data.get("repo_mapping", {})
-    native_set  = {r for r, v in ki_mapping.items() if v["ki_type"] == "native"}
-    boosted_set = {r for r, v in ki_mapping.items() if v["ki_type"] == "boosted"}
+    native_set  = {r.lower() for r, v in ki_mapping.items() if v["ki_type"] == "native"}
+    boosted_set = {r.lower() for r, v in ki_mapping.items() if v["ki_type"] == "boosted"}
 
     client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=15000)
     db_mg  = client[DB_NAME]
     db_mg.command("ping")
     print("  MongoDB verbunden — lade aktuelle Stars...")
     groups_db = {"non_ai": [], "ai_native": [], "ai_boosted": []}
-    cursor = db_mg["depsProjects"].find({}, {"_id": 1, "repoData.stars": 1, "stars": 1})
+    cursor = db_mg["depsProjects"].find({}, {"_id": 1, "name": 1, "repoData.stars": 1, "stars": 1})
     for doc in tqdm(cursor, desc="depsProjects", unit="docs"):
-        repo  = doc["_id"].get("name", "")
+        repo  = doc.get("name", "").lower()
         stars = (doc.get("repoData") or {}).get("stars")
         if stars is None:
             stars = doc.get("stars")

@@ -69,8 +69,8 @@ projects = db["depsProjects"]
 with open(KI_MAPPING_PATH, encoding="utf-8") as f:
     ki_data = json.load(f)
 ki_mapping = ki_data.get("repo_mapping", {})
-native_set  = {r for r, v in ki_mapping.items() if v["ki_type"] == "native"}
-boosted_set = {r for r, v in ki_mapping.items() if v["ki_type"] == "boosted"}
+native_set  = {r.lower() for r, v in ki_mapping.items() if v["ki_type"] == "native"}
+boosted_set = {r.lower() for r, v in ki_mapping.items() if v["ki_type"] == "boosted"}
 ai_set      = native_set | boosted_set
 non_ai_panel_repos = None  # lazy
 
@@ -84,53 +84,49 @@ print(f"\n[{ts()}] FOLIE 21: Lade Panel-Daten für Normierung auf 24 Monate...")
 
 # Aggregation: pro Repo alle Snapshots, sortiert nach Datum
 # Schritt 1: Pro Repo frühestes Datum bestimmen
-print(f"[{ts()}]   Berechne Earliest-Date pro Repo...")
-earliest = list(panel.aggregate([
-    {"$group": {
-        "_id": "$_id.nameWithOwner",
-        "first_date": {"$min": "$_id.date"}
-    }}
+print(f"[{ts()}]   Berechne Earliest-Date pro Repo (batched via $in)...")
+# Earliest-Date direkt auf depsProjectsCommits — kein Wrapper-Overhead
+raw_panel_col = db["depsProjectsCommits"]
+earliest_map  = {}
+_all_repos_agg = list(raw_panel_col.aggregate([
+    {"$group": {"_id": "$_id.nameWithOwner", "first_date": {"$min": "$_id.date"}}}
 ], allowDiskUse=True))
-print(f"[{ts()}]   {len(earliest):,} Repos")
+repo_first = {d["_id"]: d["first_date"] for d in _all_repos_agg}
+print(f"[{ts()}]   {len(repo_first):,} Repos")
 
-# Index: repo -> first_date
-repo_first = {d["_id"]: d["first_date"] for d in earliest}
-
-# Schritt 2: Alle Panel-Docs abrufen (nur commits + contributors + date + repo)
-# Wir machen das als Cursor, um RAM zu schonen
-print(f"[{ts()}]   Lade alle Snapshots (commits, contributors)...")
+# Schritt 2: alle Snapshots in Batches laden (kein $nin, kein full-scan via Wrapper)
+print(f"[{ts()}]   Lade alle Snapshots (commits, contributors) in Batches...")
 
 bucket_commits      = np.zeros(24, dtype=np.float64)
 bucket_contributors = np.zeros(24, dtype=np.float64)
 bucket_count        = np.zeros(24, dtype=np.int64)
 
-cursor = panel.find(
-    {},
-    {"_id": 1, "commits": 1, "contributors": 1}
-)
-
-for doc in tqdm(cursor, desc="all snapshots", unit="docs"):
-    repo = doc["_id"]["nameWithOwner"]
-    doc_date = doc["_id"]["date"]
-    first_date = repo_first.get(repo)
-    if first_date is None:
-        continue
-    # Relativer Monat (0-basiert)
-    try:
-        d_doc   = doc_date if isinstance(doc_date, datetime) else datetime.fromisoformat(str(doc_date))
-        d_first = first_date if isinstance(first_date, datetime) else datetime.fromisoformat(str(first_date))
-        # Monats-Differenz
-        rel_month = (d_doc.year - d_first.year) * 12 + (d_doc.month - d_first.month)
-    except Exception:
-        continue
-    if 0 <= rel_month < 24:
-        commits      = doc.get("commits", 0) or 0
-        contributors = doc.get("contributors", 0) or 0
-        bucket_commits[rel_month]      += commits
-        bucket_contributors[rel_month] += contributors
-        bucket_count[rel_month]        += 1
-
-cursor.close()
+_all_repo_list = list(repo_first.keys())
+_BATCH = 2000
+for _i in tqdm(range(0, len(_all_repo_list), _BATCH), desc="all repo batches", unit="batch"):
+    _batch = _all_repo_list[_i:_i+_BATCH]
+    cursor = panel.find(
+        {"_id.nameWithOwner": {"$in": _batch}},
+        {"_id": 1, "commits": 1, "contributors": 1}
+    )
+        for doc in cursor:
+            repo = doc["_id"]["nameWithOwner"]
+            doc_date = doc["_id"]["date"]
+            first_date = repo_first.get(repo)
+            if first_date is None:
+                continue
+            try:
+                d_doc   = doc_date if isinstance(doc_date, datetime) else datetime.fromisoformat(str(doc_date))
+                d_first = first_date if isinstance(first_date, datetime) else datetime.fromisoformat(str(first_date))
+                rel_month = (d_doc.year - d_first.year) * 12 + (d_doc.month - d_first.month)
+            except Exception:
+                continue
+            if 0 <= rel_month < 24:
+                commits      = doc.get("commits", 0) or 0
+                contributors = doc.get("contributors", 0) or 0
+                bucket_commits[rel_month]      += commits
+                bucket_contributors[rel_month] += contributors
+                bucket_count[rel_month]        += 1
 
 # Durchschnitt pro Bucket
 with np.errstate(invalid="ignore"):
@@ -329,7 +325,7 @@ print(f"\n[{ts()}] FOLIE 27+29: Orga vs. Privat & Stars...")
 print(f"[{ts()}]   Lade depsProjects...")
 cursor = projects.find(
     {},
-    {"_id": 1, "repoData.stars": 1, "stars": 1, "ownerData.type": 1}
+    {"_id": 1, "name": 1, "repoData.stars": 1, "stars": 1, "ownerData.type": 1}
 )
 
 groups = {"non_ai": {"org": 0, "user": 0, "stars": []},
@@ -337,7 +333,7 @@ groups = {"non_ai": {"org": 0, "user": 0, "stars": []},
           "ai_boosted": {"org": 0, "user": 0, "stars": []}}
 
 for doc in cursor:
-    repo = doc["_id"].get("name", "")
+    repo = doc.get("name", "").lower()
     owner_type = (doc.get("ownerData") or {}).get("type", "").lower()
     stars = (doc.get("repoData") or {}).get("stars") or doc.get("stars") or 0
 
@@ -443,27 +439,30 @@ non_ai_earliest = {repo: date for repo, date in repo_first.items()
                    if repo not in ai_set}
 print(f"[{ts()}]   Non-AI Repos: {len(non_ai_earliest):,}")
 
-cursor = panel.find(
-    {"_id.nameWithOwner": {"$nin": list(ai_set)}},
-    {"_id": 1, "commits": 1, "contributors": 1}
-)
-for doc in cursor:
-    repo       = doc["_id"]["nameWithOwner"]
-    first_date = non_ai_earliest.get(repo)
-    if first_date is None:
-        continue
-    try:
-        d_doc   = doc["_id"]["date"]
-        d_doc   = d_doc if isinstance(d_doc, datetime) else datetime.fromisoformat(str(d_doc))
-        d_first = first_date if isinstance(first_date, datetime) else datetime.fromisoformat(str(first_date))
-        rel     = (d_doc.year - d_first.year) * 12 + (d_doc.month - d_first.month)
-    except Exception:
-        continue
-    if 0 <= rel < 24:
-        bucket_na_commits[rel]      += doc.get("commits", 0) or 0
-        bucket_na_contributors[rel] += doc.get("contributors", 0) or 0
-        bucket_na_count[rel]        += 1
-cursor.close()
+_non_ai_list = list(non_ai_earliest.keys())
+_BATCH_NA = 2000
+for _ni in tqdm(range(0, len(_non_ai_list), _BATCH_NA), desc="non-ai repo batches", unit="batch"):
+    _nbatch = _non_ai_list[_ni:_ni+_BATCH_NA]
+    cursor = panel.find(
+        {"_id.nameWithOwner": {"$in": _nbatch}},
+        {"_id": 1, "commits": 1, "contributors": 1}
+    )
+    for doc in cursor:
+        repo       = doc["_id"]["nameWithOwner"]
+        first_date = non_ai_earliest.get(repo)
+        if first_date is None:
+            continue
+        try:
+            d_doc   = doc["_id"]["date"]
+            d_doc   = d_doc if isinstance(d_doc, datetime) else datetime.fromisoformat(str(d_doc))
+            d_first = first_date if isinstance(first_date, datetime) else datetime.fromisoformat(str(first_date))
+            rel     = (d_doc.year - d_first.year) * 12 + (d_doc.month - d_first.month)
+        except Exception:
+            continue
+        if 0 <= rel < 24:
+            bucket_na_commits[rel]      += doc.get("commits", 0) or 0
+            bucket_na_contributors[rel] += doc.get("contributors", 0) or 0
+            bucket_na_count[rel]        += 1
 print(f"[{ts()}]   Non-AI Buckets. Max count: {bucket_na_count.max():,}")
 
 with np.errstate(invalid="ignore"):
