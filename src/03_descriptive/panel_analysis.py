@@ -27,6 +27,7 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.db_config import get_mongo_uri
 from common.paths import get_output_dir as _get_output_dir
+from tqdm import tqdm
 
 import argparse as _argparse
 _p = _argparse.ArgumentParser(add_help=False)
@@ -385,7 +386,7 @@ def main():
         BATCH = 500
         pkg_names = set()
         pkgs_col = db["depsPackages"]
-        for i in range(0, len(repo_list_lower), BATCH):
+        for i in tqdm(range(0, len(repo_list_lower), BATCH), desc="pkg batches", unit="batch"):
             batch = repo_list_lower[i:i+BATCH]
             docs = pkgs_col.find(
                 {"_id.system": "PYPI",
@@ -481,7 +482,7 @@ def main():
         # Direkt auf depsVersions (Rohdokumente, kein Wrapper-Overhead)
         raw_col = _deps_raw_col if _deps_v2_mode else panel_packages
 
-        for i in range(0, len(pkg_list), BATCH):
+        for i in tqdm(range(0, len(pkg_list), BATCH), desc="version batches", unit="batch"):
             batch = set(pkg_list[i:i+BATCH])
             cursor = raw_col.aggregate([
                 {"$match": {
@@ -558,7 +559,7 @@ def main():
                     if p in pkg_names:
                         pkg_adopters[p].add(q)
 
-        for pkg_p in pkg_names:
+        for pkg_p in tqdm(pkg_names, desc="snapshot pkgs", unit="pkg"):
             adopters_of_p = pkg_adopters.get(pkg_p, set())
             if not adopters_of_p:
                 continue

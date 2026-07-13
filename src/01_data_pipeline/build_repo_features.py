@@ -31,6 +31,7 @@ from pathlib import Path
 import csv
 
 from pymongo import MongoClient
+from tqdm import tqdm
 
 import sys as _sys
 from pathlib import Path as _Path
@@ -162,7 +163,7 @@ def _median(lst):
     n = len(s)
     return s[n // 2] if n % 2 else (s[n//2 - 1] + s[n//2]) / 2
 
-for doc in cursor:
+for doc in tqdm(cursor, desc="panel agg", unit="docs"):
     panel_stats[doc["_id"].lower()] = {
         "commits_median":      _median(doc["commits_list"]),
         "contributors_median": _median(doc["contributors_list"]),
@@ -202,7 +203,7 @@ cursor2 = projects.find(
     }
 )
 
-for doc in cursor2:
+for doc in tqdm(cursor2, desc="depsProjects", unit="docs"):
     repo_lower = doc.get("name", "")
     if not repo_lower:
         continue
@@ -272,8 +273,6 @@ for doc in cursor2:
     })
 
     processed += 1
-    if processed % 50000 == 0:
-        print(f"[{ts()}]   {processed:,} Docs verarbeitet...")
 
 cursor2.close()
 print(f"[{ts()}] {len(rows):,} Repos total")

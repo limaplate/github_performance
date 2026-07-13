@@ -27,6 +27,7 @@ import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.paths import get_output_dir
+from tqdm import tqdm
 
 import argparse as _argparse
 _p = _argparse.ArgumentParser(add_help=False)
@@ -108,7 +109,7 @@ cursor = panel.find(
     {"_id": 1, "commits": 1, "contributors": 1}
 )
 
-for doc in cursor:
+for doc in tqdm(cursor, desc="all snapshots", unit="docs"):
     repo = doc["_id"]["nameWithOwner"]
     doc_date = doc["_id"]["date"]
     first_date = repo_first.get(repo)
@@ -185,7 +186,7 @@ bucket_b_count        = np.zeros(25, dtype=np.int64)
 
 boosted_list = list(boosted_with_year.keys())
 BATCH = 1000
-for i in range(0, len(boosted_list), BATCH):
+for i in tqdm(range(0, len(boosted_list), BATCH), desc="boosted repos", unit="batch"):
     batch = boosted_list[i:i+BATCH]
     cursor = panel.find(
         {"_id.nameWithOwner": {"$in": batch}},
@@ -212,8 +213,6 @@ for i in range(0, len(boosted_list), BATCH):
         except Exception:
             continue
     cursor.close()
-    if (i // BATCH) % 5 == 0:
-        print(f"[{ts()}]   Batch {i//BATCH + 1}...")
 
 with np.errstate(invalid="ignore"):
     avg_b_commits      = np.where(bucket_b_count > 0, bucket_b_commits      / bucket_b_count, 0)
@@ -263,7 +262,7 @@ bucket_n_count        = np.zeros(24, dtype=np.int64)
 # Earliest per native repo
 native_earliest = {d["_id"]: d["first_date"] for d in earliest if d["_id"] in native_set}
 
-for i in range(0, len(native_list), BATCH):
+for i in tqdm(range(0, len(native_list), BATCH), desc="native repos", unit="batch"):
     batch = native_list[i:i+BATCH]
     cursor = panel.find(
         {"_id.nameWithOwner": {"$in": batch}},
@@ -286,8 +285,6 @@ for i in range(0, len(native_list), BATCH):
             bucket_n_contributors[rel] += doc.get("contributors", 0) or 0
             bucket_n_count[rel]        += 1
     cursor.close()
-    if (i // BATCH) % 5 == 0:
-        print(f"[{ts()}]   Batch {i//BATCH + 1}...")
 
 with np.errstate(invalid="ignore"):
     avg_n_commits      = np.where(bucket_n_count > 0, bucket_n_commits      / bucket_n_count, 0)

@@ -181,6 +181,7 @@ _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.db_config   import get_mongo_uri
 from common.paths       import get_output_dir
 from common.compat_v2   import get_deps_collection, get_topics_collection
+from tqdm import tqdm
 
 _p = _argparse.ArgumentParser(add_help=False)
 _args, _ = _p.parse_known_args()
@@ -1120,7 +1121,7 @@ def main():
 
     log.write("\n  A4: Einzelne Keywords (fuer viz_03)")
     kw_counts = []
-    for kw_name, pattern in HIGH_CONF_KEYWORDS.items():
+    for kw_name, pattern in tqdm(HIGH_CONF_KEYWORDS.items(), desc="A4 keywords", unit="kw"):
         n = run_count(packages, {
             "_id.system": "PYPI",
             "packageInformation.description": {"$regex": pattern, "$options": "i"}
@@ -1178,7 +1179,7 @@ def main():
     log.write("\n  A2b: Per-Keyword in GitHub-Description (Vergleich zu PyPI-Description)")
     log.write("  Frage: Welche Keywords kommen auf GitHub haeufiger vor als auf PyPI?")
     kw_counts_gh = []
-    for name, pattern in HIGH_CONF_KEYWORDS.items():
+    for name, pattern in tqdm(HIGH_CONF_KEYWORDS.items(), desc="A2b keywords", unit="kw"):
         pat_re = re.compile(pattern, re.IGNORECASE)
         n = sum(1 for p in linked_project_docs
                 if p.get("description") and pat_re.search(p["description"]))
@@ -1245,7 +1246,7 @@ def main():
     pkg_names_b = []
     b_any = b_t1 = b_t2 = b_t3 = b_t12 = 0
 
-    for doc in cursor:
+    for doc in tqdm(cursor, desc="B4 pkg scan", unit="docs"):
         pkg = doc["_id"]
         libs = set(doc["libs"])
         pkg_names_b.append(pkg)

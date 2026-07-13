@@ -28,6 +28,7 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.db_config import get_mongo_uri
 from common.paths import get_output_dir
+from tqdm import tqdm
 
 import argparse as _argparse
 _p = _argparse.ArgumentParser(add_help=False)
@@ -125,7 +126,7 @@ def main():
     for ki_type, repo_set in [("native", native_repos), ("boosted", boosted_repos)]:
         counts    = Counter()
         repo_list = list(repo_set)
-        for i in range(0, len(repo_list), BATCH):
+        for i in tqdm(range(0, len(repo_list), BATCH), desc=f"org {ki_type}", unit="batch"):
             batch = repo_list[i:i+BATCH]
             docs  = projects_col.find(
                 {"_id.name": {"$in": batch}},
@@ -147,7 +148,7 @@ def main():
         ("boosted", boosted_repos, boo_stars),
     ]:
         repo_list = list(repo_set)
-        for i in range(0, len(repo_list), BATCH):
+        for i in tqdm(range(0, len(repo_list), BATCH), desc=f"stars {ki_type}", unit="batch"):
             batch = repo_list[i:i+BATCH]
             docs  = projects_col.find(
                 {"_id.name": {"$in": batch}},
@@ -178,7 +179,7 @@ def main():
     lic_data = {"native": Counter(), "boosted": Counter()}
     for ki_type, repo_set in [("native", native_repos), ("boosted", boosted_repos)]:
         repo_list = list(repo_set)
-        for i in range(0, len(repo_list), BATCH):
+        for i in tqdm(range(0, len(repo_list), BATCH), desc=f"lic {ki_type}", unit="batch"):
             batch = repo_list[i:i+BATCH]
             docs  = projects_col.find(
                 {"_id.name": {"$in": batch}},

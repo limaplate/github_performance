@@ -21,6 +21,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from pymongo import MongoClient
+from tqdm import tqdm
 
 import sys as _sys
 from pathlib import Path as _Path
@@ -243,7 +244,7 @@ def main():
 
     repo_map = {}  # repo_name -> {...}
 
-    for doc in ki_with_repo:
+    for doc in tqdm(ki_with_repo, desc="ki repos", unit="pkg"):
         pkg_name = doc["_id"]["name"]
         repos    = doc.get("packageInformation", {}).get("projects", [])
         clf      = pkg_classification.get(pkg_name)

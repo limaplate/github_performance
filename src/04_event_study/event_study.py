@@ -30,6 +30,7 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from common.db_config import get_mongo_uri
 from common.paths import get_output_dir as _get_output_dir
+from tqdm import tqdm
 
 import argparse as _argparse
 _p = _argparse.ArgumentParser(add_help=False)
@@ -202,7 +203,7 @@ def main():
         contributors_by_t = defaultdict(list)
         n_repos_used = 0
 
-        for i in range(0, len(repo_list), BATCH):
+        for i in tqdm(range(0, len(repo_list), BATCH), desc=f"event {label}", unit="batch"):
             batch = repo_list[i:i+BATCH]
             docs = list(panel_col.find(
                 {
