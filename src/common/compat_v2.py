@@ -32,19 +32,44 @@ class _CompatCollection:
         self._prefix = prefix_pipeline
         self.name = collection.name + "_compat"
 
+    # Fields that exist on the RAW source documents (before any $group stage).
+    # Filters on these can be pushed before _prefix for index utilisation.
+    _SOURCE_FIELDS = {"_id.nameWithOwner"}
+
+    def _split_filter(self, f: dict):
+        """Split filter into (pre_match, post_match) where pre can go before _prefix."""
+        if not f:
+            return {}, {}
+        pre  = {k: v for k, v in f.items() if k in self._SOURCE_FIELDS}
+        post = {k: v for k, v in f.items() if k not in self._SOURCE_FIELDS}
+        return pre, post
+
     def aggregate(self, pipeline: list, **kwargs):
+        # Push _id.nameWithOwner $match stages to before the prefix pipeline
+        # so MongoDB can use the index on the raw source collection.
+        if pipeline and list(pipeline[0].keys()) == ["$match"]:
+            pre, post = self._split_filter(pipeline[0]["$match"])
+            rest = pipeline[1:]
+            early = [{"$match": pre}] if pre else []
+            mid   = [{"$match": post}] if post else []
+            return self._col.aggregate(early + self._prefix + mid + rest, **kwargs)
         return self._col.aggregate(self._prefix + pipeline, **kwargs)
 
     def find_one(self, match_filter: dict = None, *args, **kwargs):
-        post_match = [{"$match": match_filter}] if match_filter else []
+        pre, post = self._split_filter(match_filter or {})
+        early = [{"$match": pre}] if pre else []
+        mid   = [{"$match": post}] if post else []
         rows = list(self._col.aggregate(
-            self._prefix + post_match + [{"$limit": 1}],
+            early + self._prefix + mid + [{"$limit": 1}],
             allowDiskUse=True
         ))
         return rows[0] if rows else None
 
     def count_documents(self, filter: dict = None, **kwargs):
-        pipeline = self._prefix + ([{"$match": filter}] if filter else []) + [{"$count": "n"}]
+        pre, post = self._split_filter(filter or {})
+        early = [{"$match": pre}] if pre else []
+        mid   = [{"$match": post}] if post else []
+        pipeline = early + self._prefix + mid + [{"$count": "n"}]
         rows = list(self._col.aggregate(pipeline, allowDiskUse=True))
         return rows[0]["n"] if rows else 0
 
@@ -53,9 +78,13 @@ class _CompatCollection:
 
     def find(self, filter: dict = None, projection: dict = None, **kwargs):
         """Emuliert Collection.find() als Aggregation-Cursor."""
-        stages = list(self._prefix)
-        if filter:
-            stages.append({"$match": filter})
+        pre, post = self._split_filter(filter or {})
+        stages = []
+        if pre:
+            stages.append({"$match": pre})
+        stages += list(self._prefix)
+        if post:
+            stages.append({"$match": post})
         if projection:
             stages.append({"$project": projection})
         return self._col.aggregate(stages, allowDiskUse=True, **kwargs)

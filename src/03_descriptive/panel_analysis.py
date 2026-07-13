@@ -285,13 +285,16 @@ def main():
 
     if db_version == "v1":
         panel_packages = db["depsPackagesPanel"]
+        _deps_raw_col  = db["depsPackagesDependencies"]
         _deps_v2_mode  = False
     else:
         print(f"[{ts()}] V2-Modus: depsPackagesPanel nicht vorhanden.")
         print(f"[{ts()}] Block 2 rekonstruiert dependentCount aus depsVersions.")
         print(f"[{ts()}] Methode: pro Paket Q -> erste Version mit P als depth=1-Dep")
         print(f"[{ts()}]          -> kumulativer Zähler pro Monat (semantisch identisch)")
+        # Direkt auf depsVersions (nicht via Wrapper) fuer _fetch_versions_for_pkgs
         panel_packages = db["depsVersions"]
+        _deps_raw_col  = db["depsVersions"]
         _deps_v2_mode  = True
 
     results = {}
@@ -475,10 +478,12 @@ def main():
         pkg_list = list(pkg_names)
         # adopter_versions[Q] = list of {pub, deps_set}
         adopter_versions = defaultdict(list)
+        # Direkt auf depsVersions (Rohdokumente, kein Wrapper-Overhead)
+        raw_col = _deps_raw_col if _deps_v2_mode else panel_packages
 
         for i in range(0, len(pkg_list), BATCH):
             batch = set(pkg_list[i:i+BATCH])
-            cursor = panel_packages.aggregate([
+            cursor = raw_col.aggregate([
                 {"$match": {
                     "dependenciesprocessed": True,
                     "dependencyerror": {"$ne": True},
