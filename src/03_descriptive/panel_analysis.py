@@ -469,61 +469,59 @@ def main():
     def _fetch_versions_for_pkgs(pkg_names):
         """Laedt alle relevanten Versionen aus depsVersions fuer pkg_names als Ziel-Pakete.
 
-        Gibt dict zurueck:
-          adopter_versions[adopter_Q] = [
-            {"pub": "YYYY-MM", "deps": {pkg_name, ...}}  # nur distance=1
-          ]
-          sortiert nach pub aufsteigend.
+        Ein einziger Collection-Scan mit allen pkg_names als $in-Filter —
+        viel schneller als viele kleine Batches die je die ganze Collection scannen.
         """
-        BATCH = 200
-        pkg_list = list(pkg_names)
-        # adopter_versions[Q] = list of {pub, deps_set}
+        pkg_set  = set(pkg_names)
+        pkg_list = list(pkg_set)
         adopter_versions = defaultdict(list)
-        # Direkt auf depsVersions (Rohdokumente, kein Wrapper-Overhead)
         raw_col = _deps_raw_col if _deps_v2_mode else panel_packages
 
-        for i in tqdm(range(0, len(pkg_list), BATCH), desc="version batches", unit="batch"):
-            batch = set(pkg_list[i:i+BATCH])
-            cursor = raw_col.aggregate([
-                {"$match": {
-                    "dependenciesprocessed": True,
-                    "dependencyerror": {"$ne": True},
-                    "upstreampublishedat": {"$exists": True, "$ne": None},
-                    "dependencyInformation.dependencies": {
-                        "$elemMatch": {
-                            "package.name": {"$in": list(batch)},
-                            "distance": 1
-                        }
+        print(f"  Scanne depsVersions nach {len(pkg_list):,} Ziel-Packages (1 Scan)...")
+        t0 = time.time()
+        cursor = raw_col.aggregate([
+            {"$match": {
+                "dependenciesprocessed": True,
+                "dependencyerror": {"$ne": True},
+                "upstreampublishedat": {"$exists": True, "$ne": None},
+                "dependencyInformation.dependencies": {
+                    "$elemMatch": {
+                        "package.name": {"$in": pkg_list},
+                        "distance": 1
                     }
-                }},
-                {"$project": {
-                    "_id": 1,
-                    "upstreampublishedat": 1,
-                    "dependencyInformation.dependencies": 1
-                }}
-            ], allowDiskUse=True)
-
-            for doc in cursor:
-                adopter = doc["_id"]["name"]
-                pub_raw = doc.get("upstreampublishedat")
-                if not pub_raw:
-                    continue
-                try:
-                    pub_str = str(pub_raw)[:7]
-                    datetime.strptime(pub_str, "%Y-%m")
-                except Exception:
-                    continue
-
-                deps = (doc.get("dependencyInformation") or {}).get("dependencies") or []
-                dep_set = {
-                    (d.get("package") or {}).get("name")
-                    for d in deps
-                    if d.get("distance") == 1 and (d.get("package") or {}).get("name") in batch
                 }
-                if dep_set:
-                    adopter_versions[adopter].append({"pub": pub_str, "deps": dep_set})
+            }},
+            {"$project": {
+                "_id": 1,
+                "upstreampublishedat": 1,
+                "dependencyInformation.dependencies": 1
+            }}
+        ], allowDiskUse=True)
 
-        # Sortieren pro Adopter nach Datum
+        n_docs = 0
+        for doc in tqdm(cursor, desc="depsVersions scan", unit="docs"):
+            n_docs += 1
+            adopter = doc["_id"]["name"]
+            pub_raw = doc.get("upstreampublishedat")
+            if not pub_raw:
+                continue
+            try:
+                pub_str = str(pub_raw)[:7]
+                datetime.strptime(pub_str, "%Y-%m")
+            except Exception:
+                continue
+
+            deps = (doc.get("dependencyInformation") or {}).get("dependencies") or []
+            dep_set = {
+                (d.get("package") or {}).get("name")
+                for d in deps
+                if d.get("distance") == 1 and (d.get("package") or {}).get("name") in pkg_set
+            }
+            if dep_set:
+                adopter_versions[adopter].append({"pub": pub_str, "deps": dep_set})
+
+        print(f"  {n_docs:,} Dokumente gescannt, {len(adopter_versions):,} Adopter gefunden  ({time.time()-t0:.1f}s)")
+
         for adopter in adopter_versions:
             adopter_versions[adopter].sort(key=lambda x: x["pub"])
         return adopter_versions
